@@ -1,0 +1,94 @@
+\documentclass[11pt, a4paper]{report}
+\usepackage{graphicx, parskip, color, natbib}
+
+% While microtype produces nice results,
+% change font size by no more than 1%.
+\usepackage[stretch = 10]{microtype}
+
+% Might want to mess with page geometry at some point.
+% Handy to have just in case.
+\usepackage{geometry}
+
+% Using these packages for vector graphics, e.g. the package
+% relationship diagram.
+\usepackage{pgf, tikz}
+\usetikzlibrary{arrows, positioning, fit, shapes}
+
+% Ensuring we get hyperlinks and that natbib plays nicely with it.
+\usepackage{hyperref, hypernat}
+
+% Defining the file/lang formats we want.
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+
+% Requires minted.sty to be in the same directory as this file.
+% Also requires pdflatex to be run with -shell-escape, but the makefile
+% already does this, use `make all` or `make show`.
+% Using the pastie style by default.
+\usepackage{minted}
+\usemintedstyle{pastie}
+
+% Saving myself from having to format as monospace.
+\newcommand{\grid}{\texttt{grid}}
+\newcommand{\gridSVG}{\texttt{gridSVG}}
+\newcommand{\R}{\texttt{R}}
+
+% Renaming the bibliography section with the name `References`.
+\addto{\captionsenglish}{\renewcommand{\bibname}{References}}
+
+% Document properties.
+\title{Web-based Interactive Graphics with gridSVG}
+\author{Simon Potter}
+\date{June 19, 2011} % TODO: Change this date later
+\hypersetup{pdftitle = {Web-based Interactive Graphics with gridSVG | Simon Potter},
+        	pdfauthor = {Simon Potter}}
+
+\begin{document}
+
+\input{./tex/title.tex}
+\maketitle
+
+\grid{} blah blah \citep{RGraphics} \R{}. blah blah \citet{SVGSpec} \gridSVG{} blah blah \citet{SVGAnnotation}, blah blah blah \citet{gridSVG}.
+
+\begin{center}
+\begin{tikzpicture}[scale=3, >=triangle 45]
+\tikzstyle{every node}=[draw,shape=circle];
+\node[rounded rectangle, very thick] (grdev) at (1,1)  {\Large grDevices};
+\node[rounded rectangle, very thick] (gr) at (0,2) {\Large graphics};
+\node[rounded rectangle, very thick] (grid) at (2,2) {\Large grid};
+\node[rounded rectangle, very thick] (svg) at (0,0) {\Large svg};
+\node[rounded rectangle, very thick] (pdf) at (1,0) {\Large pdf};
+\node[rounded rectangle, very thick] (gridsvg) at (2,0) {\Large gridSVG};
+\draw [->, thick] (grdev) -- (svg);
+\draw [->, thick] (grdev) -- (pdf);
+\draw [->, thick] (gr) -- (grdev);
+\draw [->, thick] (grid) -- (grdev);
+\draw [->, thick] (grid) -- (gridsvg);
+\end{tikzpicture}
+\end{center}
+
+\begin{minted}{r}
+square <- function(x) {
+  x * x
+}
+\end{minted}
+
+\tableofcontents
+%\listoffigures
+%\listoftables
+\input{./tex/abstract.tex}
+\input{./tex/introduction.tex}
+\input{./tex/body.tex}
+\input{./tex/conclusion.tex}
+ 
+\appendix
+\input{./tex/appendix.tex}
+ 
+% References:
+\clearpage
+\addcontentsline{toc}{chapter}{References}
+\input{./tex/references.tex}
+
+\bibliographystyle{apa}
+\bibliography{references.bib}
+\end{document}
