@@ -37,16 +37,18 @@
 \addto{\captionsenglish}{\renewcommand{\bibname}{References}}
 
 % Document properties.
-\title{Web-based Interactive Graphics with gridSVG}
-\author{Simon Potter}
-\date{June 19, 2011} % TODO: Change this date later
-\hypersetup{pdftitle = {Web-based Interactive Graphics with gridSVG | Simon Potter},
-        	pdfauthor = {Simon Potter}}
+\newcommand{\doctitle}{Web-based Interactive Graphics with gridSVG}
+\newcommand{\docauthor}{Simon Potter}
+\newcommand{\docdate}{June 19, 2011} % TODO: Change this date later
+\title{\doctitle{}}
+\author{\docauthor{}}
+\date{\docdate{}}
+\hypersetup{pdftitle = {\doctitle{} | \docauthor{}},
+        	pdfauthor = {\docauthor{}}}
 
 \begin{document}
 
 \input{./tex/title.tex}
-\maketitle
 
 \grid{} blah blah \citep{RGraphics} \R{}. blah blah \citet{SVGSpec} \gridSVG{} blah blah \citet{SVGAnnotation}, blah blah blah \citet{gridSVG}.
 
@@ -67,7 +69,7 @@
 \end{tikzpicture}
 \end{center}
 
-\begin{minted}{r}
+\begin{minted}[frame=single]{r}
 square <- function(x) {
   x * x
 }
