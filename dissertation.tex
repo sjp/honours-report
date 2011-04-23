@@ -3,6 +3,8 @@
 
 % While microtype produces nice results,
 % change font size by no more than 1%.
+% Need to use lmodern CM fonts in order to scale.
+\usepackage{lmodern}
 \usepackage[stretch = 10]{microtype}
 
 % Might want to mess with page geometry at some point.
@@ -15,10 +17,12 @@
 \usetikzlibrary{arrows, positioning, fit, shapes}
 
 % Ensuring we get hyperlinks and that natbib plays nicely with it.
-\usepackage{hyperref, hypernat}
+\usepackage{hyperref}
+\usepackage{hypernat}
 
-% Defining the file/lang formats we want.
+% Defining the file/font/lang formats we want.
 \usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
 \usepackage[english]{babel}
 
 % Requires minted.sty to be in the same directory as this file.
