@@ -41,16 +41,47 @@
 % Document properties.
 \newcommand{\doctitle}{Web-based Interactive Graphics with gridSVG}
 \newcommand{\docauthor}{Simon Potter}
-\newcommand{\docdate}{June 19, 2011} % TODO: Change this date later
+\newcommand{\docdate}{June 27, 2011}
 \title{\doctitle{}}
 \author{\docauthor{}}
 \date{\docdate{}}
 \hypersetup{pdftitle = {\doctitle{} | \docauthor{}},
-        	pdfauthor = {\docauthor{}}}
+            pdfauthor = {\docauthor{}},
+            pdfborder = {0 0 0}}
 
 \begin{document}
 
+% Title page
 \input{./tex/title.tex}
+
+%%%%%%%%%%%%%%%%%%%%%%
+% BEGIN FRONT MATTER %
+%%%%%%%%%%%%%%%%%%%%%%
+
+\setcounter{page}{1}
+\renewcommand{\thepage}{\roman{page}}
+\input{./tex/abstract.tex}
+
+\setcounter{page}{2}
+\tableofcontents
+\listoffigures
+\listoftables
+
+%%%%%%%%%%%%%%%%%%%%
+% END FRONT MATTER %
+%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%
+% BEGIN MAIN MATTER %
+%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Introduction}
+\setcounter{page}{1}
+\renewcommand{\thepage}{\arabic{page}}
+\input{./tex/introduction.tex}
+
+\chapter{Body}
+\input{./tex/body.tex}
 
 \grid{} blah blah \citep{RGraphics} \R{}. blah blah \citet{SVGSpec} \gridSVG{} blah blah \citet{SVGAnnotation}, blah blah blah \citet{gridSVG}.
 
@@ -77,22 +108,30 @@ square <- function(x) {
 }
 \end{minted}
 
-\tableofcontents
-%\listoffigures
-%\listoftables
-\input{./tex/abstract.tex}
-\input{./tex/introduction.tex}
-\input{./tex/body.tex}
+\chapter{Conclusion}
 \input{./tex/conclusion.tex}
+
+%%%%%%%%%%%%%%%%%%%
+% END MAIN MATTER %
+%%%%%%%%%%%%%%%%%%%
  
 \appendix
 \input{./tex/appendix.tex}
  
-% References:
+%%%%%%%%%%%%%%%%%%%%
+% BEGIN REFERENCES %
+%%%%%%%%%%%%%%%%%%%%
+
 \clearpage
+\phantomsection
 \addcontentsline{toc}{chapter}{References}
 \input{./tex/references.tex}
 
 \bibliographystyle{apa}
 \bibliography{references.bib}
+
+%%%%%%%%%%%%%%%%%%
+% END REFERENCES %
+%%%%%%%%%%%%%%%%%%
+
 \end{document}

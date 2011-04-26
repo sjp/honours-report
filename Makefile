@@ -12,14 +12,14 @@ all:
 	bibtex $(DOCUMENT)
 	pdflatex $(PDFLATEX_ARGS) $(DOCUMENT_TEX)
 	pdflatex $(PDFLATEX_ARGS) $(DOCUMENT_TEX)
-	rm *.log *.out *.aux *.toc *.bbl *.blg
+	-rm $(DOCUMENT).log $(DOCUMENT).out $(DOCUMENT).aux $(DOCUMENT).toc $(DOCUMENT).lof $(DOCUMENT).lot $(DOCUMENT).bbl $(DOCUMENT).blg
 
 show:
 	pdflatex $(PDFLATEX_ARGS) $(DOCUMENT_TEX)
 	bibtex $(DOCUMENT)
 	pdflatex $(PDFLATEX_ARGS) $(DOCUMENT_TEX)
 	pdflatex $(PDFLATEX_ARGS) $(DOCUMENT_TEX)
-	rm *.log *.out *.aux *.toc *.bbl *.blg
+	-rm $(DOCUMENT).log $(DOCUMENT).out $(DOCUMENT).aux $(DOCUMENT).toc $(DOCUMENT).lof $(DOCUMENT).lot $(DOCUMENT).bbl $(DOCUMENT).blg
 	evince $(DOCUMENT_PDF) &
 
 all-dirty:
@@ -36,4 +36,4 @@ show-dirty:
 	evince $(DOCUMENT_PDF) &
 
 clean:
-	rm *.log *.out *.aux *.toc *.bbl *.blg $(DOCUMENT_PDF)
+	-rm $(DOCUMENT).log $(DOCUMENT).out $(DOCUMENT).aux $(DOCUMENT).toc $(DOCUMENT).lof $(DOCUMENT).lot $(DOCUMENT).bbl $(DOCUMENT).blg $(DOCUMENT_PDF)
