@@ -1,4 +1,61 @@
 \section{Introduction}
 
-skdhvsdjkhk
+This dissertation describes the motivation for furthering the development of the \gridSVG{} package for \R{}.
+The decisions and processes involved while developing \gridSVG{} are also discussed.
 
+When examining what web-based interactive graphics means, we can quickly determine the options that exist in this area.
+A web-based graphic is an image that is able to be viewed by any modern web browser (Opera, Google Chrome, Mozilla Firefox).
+An interactive graphic has the property of being able to respond to events triggered by a user.
+By combining these definitions we establish that a web-based interactive graphic is an image that is able to be viewed within a web browser and is able to respond to events such as mouse clicks.
+
+Currently there are limited options when it comes to interactive graphics for the web.
+Many existing implementations use one of Adobe Flash, Microsoft Silverlight or Oracle's Java plug-ins.
+A significant factor to consider is that the presence of these plug-ins cannot be guaranteed to be available in a web browser.
+To be able to create interactive graphics that target these plugins, development may require the prohibitive cost of vendor software.
+
+Recently the development of the HTML standard has introduced a new element, \texttt{canvas}.
+The \texttt{canvas} element provides a method of displaying graphics via JavaScript, the lingua franca of scripting languages for the web.
+For the purposes of interactive graphics it is unlikely to be suitable because when drawing to a \texttt{canvas}, there is no object retention.
+This means that when a line is drawn, it appears as expected but it is impossible to retrieve or examine that line programmatically.
+The implication of this is that if we wish to modify the appearance or behaviour of a graphic, we are required to manage graphical objects in JavaScript, outside of the \texttt{canvas} element.
+Two JavaScript libraries, oCanvas and EaselJS, have been developed that manage graphical objects but they are new projects that are relatively immature. \citep{oCanvas, easelJS}
+
+A more developed and mature graphics format to consider is SVG.
+SVG is a Scalable Vector Graphics format that has the property of being resolution independent.
+This allows it to retain the same visual quality at any size.
+SVG has been standardised by the W3C and has been in use for over a decade, ensuring that its use is going to be widely supported.
+The problem of object retention is not an issue with SVG because SVG takes a declarative approach to image rendering.
+A browser is told to display an SVG image but not how to display it whereas \texttt{canvas} is told exactly how to draw a line, or any other graphical element.
+Fortunately, SVG includes the ability to be interactive through the use of JavaScript.
+
+Like the \texttt{canvas} element, version 5 of the HTML standard includes support for SVG as a native element.
+This further ensures that good support for SVG will be widely available among web browsers.
+
+When considering these options, it is clear that SVG is the best candidate for our purposes.
+
+Given that we need to produce images in SVG we now need to examine how we can do that.
+
+Firstly we can use the \texttt{svg()} graphics device in \R{}.
+This will produce valid SVG output that will reproduce the output that you would normally see in an \R{} plotting window to a high degree of accuracy.
+Despite this being a convenient approach, it is not without its flaws.
+Firstly, the \texttt{svg()} device is not available on Windows, so \R{} cannot produce SVG plots on Windows.
+Secondly, when \texttt{svg()} is available, the output that is produced is extremely difficult to parse.
+This is because we have very little idea which \R{} command produced specific elements in SVG.
+Attempting to write JavaScript that would interact with the graphical elements you observe in \R{} would prove challenging.
+A package has been written for \R{} that does just this, \texttt{SVGAnnotation} \citet{SVGAnnotation} but it is highly dependent on the behaviour of the Cairo graphics library that \R{} uses to create an SVG image.
+It is also difficult to extend the behaviour of \texttt{SVGAnnotation}.
+Another problem with using \R{}'s \texttt{svg()} graphics device is the way in which Cairo saves \texttt{svg()} objects.
+In order to preserve appearance exactly, it stores all objects as paths.
+This stops us from using some of the features that SVG affords, such as text search.
+
+Rather than taking \texttt{SVGAnnotation}'s approach of taking an SVG file and
+trying to work out which \R{} graphics objects map to SVG elements,
+\texttt{gridSVG} produces an SVG image with annotations to show which element
+produced the element.
+The only limitation to using gridSVG is that plots must have been produced using the \grid{} graphics engine for \R{}.
+The basis for this lies in the fact that all \grid{} graphics objects have a name attribute.
+It is with the name attribute that we can map a graphics object to an SVG element.
+
+\subsection{Background}
+
+The grid graphics engine differs from \R{}'s base graphics engine but still calls the grDevices package.
