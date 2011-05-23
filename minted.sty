@@ -200,7 +200,7 @@
    {\def\minted@shortname{#1}}
   \expandafter\newcommand\csname\minted@shortname\endcsname[2][]{
     \inputminted[#3,##1]{#2}{##2}}}
-\newfloat{listing}{h}{lol}
+\newfloat{listing}{h}{lol}[chapter]
 \newcommand\listingscaption{Listing}
 \floatname{listing}{\listingscaption}
 \newcommand\listoflistingscaption{List of listings}
