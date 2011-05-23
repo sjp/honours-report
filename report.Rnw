@@ -21,6 +21,11 @@
 \usepackage{hyperref}
 \usepackage{hypernat}
 
+% Don't want `Chapter X` to appear
+% Instead, `1 Introduction` will appear for example
+\usepackage{titlesec}
+\titleformat{\chapter}[hang]{\bfseries \huge}{\thechapter}{2pc}{}
+
 % Defining the file/font/lang formats we want.
 \usepackage[utf8]{inputenc}
 \usepackage[OT1]{fontenc}
@@ -92,11 +97,9 @@ library(ggplot2)
 
 \setcounter{page}{1}
 \renewcommand{\thepage}{\arabic{page}}
-\chapter{Introduction}
-\input{./tex/introduction.tex}
 
-\chapter{Body}
-\input{./tex/body.tex}
+\input{./tex/introduction.tex}
+\input{./tex/process.tex}
 
 \grid{} blah blah \citep{RGraphics} \R{}. blah blah \citet{SVGSpec} \gridSVG{} blah blah \citet{SVGAnnotation}, blah blah blah \citet{gridSVG}.
 
@@ -129,7 +132,6 @@ gridToSVG("fontExample.svg")
 \caption{An example of an \R{} function.}
 \label{lst:square}
 \end{listing}
-
 
 <<echo = FALSE, fig = FALSE>>=
 ## store current settings, to be restored later
@@ -188,7 +190,7 @@ gridToSVG("test.svg")
 \label{fig:latticeDemo10}
 \end{figure}
 
-\chapter{Conclusion}
+\input{./tex/discussion.tex}
 \input{./tex/conclusion.tex}
 
 %%%%%%%%%%%%%%%%%%%
