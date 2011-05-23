@@ -1,5 +1,8 @@
 \documentclass[11pt, a4paper]{report}
-\usepackage{graphicx, parskip, color, natbib, inconsolata}
+\usepackage{graphicx, parskip, color, natbib}
+
+% Allowing dots in graphical filenames
+\usepackage{grffile}
 
 % While microtype produces nice results,
 % change font size by no more than 1%.
@@ -28,15 +31,18 @@
 % already does this, use `make all` or `make show`.
 % Using the pastie style by default.
 \usepackage{minted}
-\usemintedstyle{pastie}
+\usemintedstyle{friendly}
+\newminted{r}{frame = single, xleftmargin = 0.05\textwidth, xrightmargin = 0.05\textwidth}
 
-% Saving myself from having to format as monospace.
-\newcommand{\grid}{\texttt{grid}}
-\newcommand{\gridSVG}{\texttt{gridSVG}}
-\newcommand{\R}{\texttt{R}}
+% Saving myself from repeatedly having to format text.
+\newcommand{\grid}{\textsf{grid}}
+\newcommand{\gridSVG}{\textsf{gridSVG}}
+\newcommand{\R}{\textsf{R}}
 
 % Renaming the bibliography section with the name `References`.
+% Renaming list of listings section with the name `List of Listings`.
 \addto{\captionsenglish}{\renewcommand{\bibname}{References}}
+\addto{\captionsenglish}{\renewcommand{\listoflistingscaption}{List of Listings}}
 
 % Document properties.
 \newcommand{\doctitle}{Web-based Interactive Graphics with gridSVG}
@@ -47,7 +53,14 @@
 \date{\docdate{}}
 \hypersetup{pdftitle = {\doctitle{} | \docauthor{}},
             pdfauthor = {\docauthor{}},
-            pdfborder = {0 0 0}}
+            pdfborder = {0 0 0.5}}
+
+% Avoiding the need to keep loading libraries
+<<echo = FALSE, fig = FALSE>>=
+library(gridSVG)
+library(lattice)
+library(ggplot2)
+@
 
 \begin{document}
 
@@ -65,7 +78,9 @@
 \setcounter{page}{2}
 \tableofcontents
 \listoffigures
+\listoflistings
 \listoftables
+\pagebreak
 
 %%%%%%%%%%%%%%%%%%%%
 % END FRONT MATTER %
@@ -75,9 +90,9 @@
 % BEGIN MAIN MATTER %
 %%%%%%%%%%%%%%%%%%%%%
 
-\chapter{Introduction}
 \setcounter{page}{1}
 \renewcommand{\thepage}{\arabic{page}}
+\chapter{Introduction}
 \input{./tex/introduction.tex}
 
 \chapter{Body}
@@ -104,11 +119,74 @@ Here is an \citet{easelJS} example \citet{oCanvas} in carto \citet{cartoEvent}.
 \end{tikzpicture}
 \end{center}
 
-\begin{minted}[frame=single]{r}
-square <- function(x) {
-  x * x
-}
-\end{minted}
+\begin{listing}[H]
+\begin{rcode}
+library(gridSVG)
+grid.text("Hello, world!",
+          gp = gpar(fontsize = 20, fontface = "Comic Sans MS"))
+gridToSVG("fontExample.svg")
+\end{rcode}
+\caption{An example of an \R{} function.}
+\label{lst:square}
+\end{listing}
+
+
+<<echo = FALSE, fig = FALSE>>=
+## store current settings, to be restored later
+old.settings <- trellis.par.get()
+
+## changing settings to new 'theme'
+trellis.par.set(theme = col.whitebg())
+
+## non-trivial strip function
+barchart(variety ~ yield | year * site, barley, origin = 0,
+         layout = c(4, 3),
+         between = list(x = c(0, 0.5, 0)),
+         ## par.settings = list(clip = list(strip = "on")),
+         strip =
+         function(which.given,
+                  which.panel,
+                  factor.levels,
+                  bg = trellis.par.get("strip.background")$col[which.given],
+                  ...) {
+             axis.line <- trellis.par.get("axis.line")
+             pushViewport(viewport(clip = trellis.par.get("clip")$strip))
+             if (which.given == 1)
+             {
+                 grid.rect(x = .26, just = "right",
+                           gp = gpar(fill = bg, col = "transparent"))
+                 ltext(factor.levels[which.panel[which.given]],
+                       x = .24, y = .5, adj = 1)
+             }
+             if (which.given == 2)
+             {
+                 grid.rect(x = .26, just = "left",
+                           gp = gpar(fill = bg, col = "transparent"))
+                 ltext(factor.levels[which.panel[which.given]],
+                       x = .28, y = .5, adj = 0)
+             }
+             upViewport()
+             grid.rect(gp =
+                       gpar(col = axis.line$col,
+                            lty = axis.line$lty,
+                            lwd = axis.line$lwd,
+                            alpha = axis.line$alpha,
+                            fill = "transparent"))
+         }, par.strip.text = list(lines = 0.4))
+
+# Restoring old theme
+trellis.par.set(theme = old.settings, strict = 2)
+
+# Saving SVG
+gridToSVG("test.svg")
+@
+
+\begin{figure}[!h]
+\centering
+\fbox{\includegraphics[width = 0.4\textwidth]{./test.svg.pdf}}
+\caption{An example of gridSVG exporting a lattice demo}
+\label{fig:latticeDemo10}
+\end{figure}
 
 \chapter{Conclusion}
 \input{./tex/conclusion.tex}
