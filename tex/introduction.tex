@@ -1,15 +1,68 @@
+\chapter{Aim}
+
+The intention of this project is to produce animated and interactive plots on web pages.
+These plots can convey more information and be more engaging than regular static graphics.
+Currently, the creation of these plots is not possible in \R{} without encountering some difficulty.
+A package for \R{} exists that can create the type of plots we want, but it is not capable of producing all but the most basic of statistical graphics.
+This package, \gridSVG{}, needed to be improved upon in order to create useful animated and interactive graphics.
+The \gridSVG{} package required extending so that it is able to generate plots that are sufficiently similar to those that are produced by \R{}.
+
 \chapter{Introduction}
 
-\section{Aim}
+\section{What are web-based interactive graphics?}
+
+It must be established what are web-based interactive graphics in order to illustrate the intended goal of this project.
+Web-based graphics are images that are able to be viewed within a web page by a web browser.
+The graphics we intend to produce are not only web-based, but also have the property of being animatable and interactive.
+Interactivity involves changing the behaviour or appearance of an image, most commonly by the use of a mouse or keyboard.
+
+\section{Existing solutions}
+
+There are currently a few notable packages for \R{} that do allow for the creation of web-based interactive graphics.
+It will be established how these packages work in order to explain why \gridSVG{} is being improved upon.
+
+The \textsf{animation} package can create animated graphics in many formats, including GIF, Flash, and with the use of HTML and JavaScript any common image format can be animated.
+In order to produce animated graphics, the \textsf{animation} package generates a series of static plots and pieces them together.
+With enough static plots this gives the illusion of animation, much like how a film projector quickly shows a series of static frames when playing a movie.
+
+\textsf{animation} relies heavily on the use of software not present within the package to produce many of the different graphics formats it supports.
+In fact, the only formats that do not have any dependencies on third-party software are on-screen animations and HTML pages.
+On-screen animations have the drawback of being unable to be stored in any way.
+The GIF, Flash, PDF and video formats that \textsf{animation} all require software additional to \R{}.
+
+Other packages have been released but they leverage other graphics systems to implement any animation or interactivity.
+These packages include: \textsf{webvis}, which utilises the Protovis Javascript library, \textsf{googleVis}, which uses Google's Visualisation API, and \textsf{gWidgetsWWW} which provides its own Javascript library.
+While these systems do all produce animated and interactive graphics, one problem is that they are no longer using \R{} graphics.
+This means that a plot that is produced in \R{} will not appear similar to the resulting plots that these packages produce. 
+
+A package that generates animated, interactive graphics via the \R{} graphics system is \textsf{SVGAnnotation} \citet{SVGAnnotation}.
+It leverages \R{}'s \texttt{svg()} graphics device by post-processing the output to see which SVG elements correspond with components of a plot.
+After performing the post-processing, animation can occur via SMIL and interactivity via JavaScript.
+
+\section{Motivation for gridSVG}
 
 
-\section{Introduction}
+\chapter{The design of gridSVG}
 
+\section{What is grid? How does it work?}
 
-\section{The design of gridSVG}
+\begin{center}
+\begin{tikzpicture}[scale=3, >=triangle 45]
+\tikzstyle{every node}=[draw,shape=circle];
+\node[rounded rectangle, very thick] (grdev) at (1,1)  {\Large grDevices};
+\node[rounded rectangle, very thick] (gr) at (0,2) {\Large graphics};
+\node[rounded rectangle, very thick] (grid) at (2,2) {\Large grid};
+\node[rounded rectangle, very thick] (svg) at (0,0) {\Large svg};
+\node[rounded rectangle, very thick] (pdf) at (1,0) {\Large pdf};
+\node[rounded rectangle, very thick] (gridsvg) at (2,0) {\Large gridSVG};
+\draw [->, thick] (grdev) -- (svg);
+\draw [->, thick] (grdev) -- (pdf);
+\draw [->, thick] (gr) -- (grdev);
+\draw [->, thick] (grid) -- (grdev);
+\draw [->, thick] (grid) -- (gridsvg);
+\end{tikzpicture}
+\end{center}
 
-\subsection{What is grid? How does it work?}
+\section{What is SVG? Javascript?}
 
-\subsection{What is SVG? Javascript?}
-
-\subsection{Mapping of grid grobs to SVG elements}
+\section{Mapping of grid grobs to SVG elements}
