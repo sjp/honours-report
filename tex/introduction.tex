@@ -37,10 +37,24 @@ This means that a plot that is produced in \R{} will not appear similar to the r
 
 A package that generates animated, interactive graphics via the \R{} graphics system is \textsf{SVGAnnotation} \citet{SVGAnnotation}.
 It leverages \R{}'s \texttt{svg()} graphics device by post-processing the output to see which SVG elements correspond with components of a plot.
-After performing the post-processing, animation can occur via SMIL and interactivity via JavaScript.
+After performing the post-processing, animation can occur along with interactivity via JavaScript.
+It's ability to produce these graphics given the reverse engineering that's required is extraordinary.
+However, a significant issue is that while it allows for interesting graphics to be created, the ease at which this can be done is non-trivial.
 
 \section{Motivation for gridSVG}
 
+Here it is discussed why the currently available \R{} packages are not suitable for the construction of web-based interactive graphics.
+
+We deem \textsf{animation} package to be unsuitable for our needs because of the lack of ``true" animation and it's notable dependencies on software that is not packaged.
+On top of this, the graphics it creates are likely to be space inefficient compared to a solution that uses true animation.
+This is because animation is done through a series of snapshots, rather than a description of the objects and how they are to be animated.
+
+The packages \textsf{webvis}, \textsf{googleVis} and \textsf{gWidgetsWWW} do create the kind of graphics we want, but they use other graphics systems to accomplish this.
+We would like to use the facilities \R{} provides with its powerful graphics system to create animated and interactive graphics.
+This way we can ensure that the graphics we see in \R{} are what is actually going to be modified when we create our interactive plots.
+
+While \textsf{SVGAnnotation} can create the kind of graphics we desire, it is difficult to understand how it works.
+Because of this it is challenging to extend \textsf{SVGAnnotation}'s features to create animated and interactive graphics that are not provided out-of-the-box.
 
 \chapter{The design of gridSVG}
 

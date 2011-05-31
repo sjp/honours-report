@@ -79,7 +79,6 @@ library(ggplot2)
 % BEGIN FRONT MATTER %
 %%%%%%%%%%%%%%%%%%%%%%
 
-\setcounter{page}{1}
 \renewcommand{\thepage}{\roman{page}}
 \input{./tex/abstract.tex}
 
