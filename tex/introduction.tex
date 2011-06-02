@@ -1,12 +1,3 @@
-\chapter{Aim}
-
-The intention of this project is to produce animated and interactive plots on web pages.
-These plots can convey more information and be more engaging than regular static graphics.
-Currently, the creation of these plots is not possible in \R{} without encountering some difficulty.
-A package for \R{} exists that can create the type of plots we want, but it is not capable of producing all but the most basic of statistical graphics.
-This package, \gridSVG{}, needed to be improved upon in order to create useful animated and interactive graphics.
-The \gridSVG{} package required extending so that it is able to generate plots that are sufficiently similar to those that are produced by \R{}.
-
 \chapter{Introduction}
 
 \section{What are web-based interactive graphics?}
@@ -21,9 +12,11 @@ Interactivity involves changing the behaviour or appearance of an image, most co
 There are currently a few notable packages for \R{} that do allow for the creation of web-based interactive graphics.
 It will be established how these packages work in order to explain why \gridSVG{} is being improved upon.
 
-The \textsf{animation} package can create animated graphics in many formats, including GIF, Flash, and with the use of HTML and JavaScript any common image format can be animated.
-In order to produce animated graphics, the \textsf{animation} package generates a series of static plots and pieces them together.
-With enough static plots this gives the illusion of animation, much like how a film projector quickly shows a series of static frames when playing a movie.
+The \textsf{animation} package can create animated graphics in many image and video formats, most of which are not provided by \R{}.
+In order to produce animated graphics, the \textsf{animation} package generates a series of static plots.
+Each plot shows the animation at a specific point in time.
+This means that long and fluid animations will generate a large amount of static plots in comparison to shorter, ``choppy" animations.
+By piecing all of the static plots together, the illusion of animation is created.
 
 \textsf{animation} relies heavily on the use of software not present within the package to produce many of the different graphics formats it supports.
 In fact, the only formats that do not have any dependencies on third-party software are on-screen animations and HTML pages.
@@ -31,52 +24,58 @@ On-screen animations have the drawback of being unable to be stored in any way.
 The GIF, Flash, PDF and video formats that \textsf{animation} all require software additional to \R{}.
 
 Other packages have been released but they leverage other graphics systems to implement any animation or interactivity.
-These packages include: \textsf{webvis}, which utilises the Protovis Javascript library, \textsf{googleVis}, which uses Google's Visualisation API, and \textsf{gWidgetsWWW} which provides its own Javascript library.
-While these systems do all produce animated and interactive graphics, one problem is that they are no longer using \R{} graphics.
-This means that a plot that is produced in \R{} will not appear similar to the resulting plots that these packages produce. 
+These packages include \textsf{webvis}, \textsf{googleVis} and \textsf{gWidgetsWWW}.
 
-A package that generates animated, interactive graphics via the \R{} graphics system is \textsf{SVGAnnotation} \citet{SVGAnnotation}.
-It leverages \R{}'s \texttt{svg()} graphics device by post-processing the output to see which SVG elements correspond with components of a plot.
+The \textsf{webvis} package currently uses the Protovis JavaScript library to produce its plots.
+The approach that \textsf{webvis} takes is to translate the graphical functions that \R{} provides into equivalents that utilise the Protovis library.
+Use of the \texttt{plot.webvis} function is expected to produce similar results as a plot that is created using \R{}'s \texttt{plot} function.
+It is also possible to construct a graph using Protovis-specific functions, e.g. using \texttt{pv.line} to add a line.
+This approach requires knowledge of Protovis and the code to produce plots within \R{} will be very similar to equivalent JavaScript code.
+
+The \textsf{googleVis} package provides an interface for \R{} to Google's Visualisation API.
+\textsf{googleVis} allows the creation of plots that use Google's graphics library.
+This means that any plot that can be created with this library can be used by \textsf{googleVis}.
+An example of the graphics that \textsf{googleVis} can create is an interactive map that places markers at locations on the map.
+Many of the types of plots available in \textsf{googleVis} are widely used in highly visible Google products.
+This ensures that the plots are going to be highly polished in both appearance and behaviour.
+
+\textsf{gWidgetsWWW} is a package that provides an HTML and JavaScript implementation of the \textsf{gWidgets} package for \R{}.
+\textsf{gWidgets} implements a generic interface for creating interactive GUIs allowing the same \R{} code to work in multiple GUI toolkits.
+This means that we can use \textsf{gWidgetsWWW} to create a graphical user interface that responds to user input.
+When used in conjunction with \textsf{RApache}, an \R{} module for the Apache HTTP Server, \textsf{gWidgetsWWW} can allow for interactivity on a web page.
+This is achieved by using JavaScript to request updates to the web page when events are triggered in interactive graphical elements.
+A possible use case is the ability to interactively set the scale of an axis, and then showing updated plots as the scale changes.
+
+A package developed by \citet{SVGAnnotation} that generates animated, interactive graphics via the \R{} graphics system is \textsf{SVGAnnotation}.
+It leverages \R{}'s \texttt{svg} graphics device by post-processing its output to see which SVG elements correspond with specific components of a plot.
 After performing the post-processing, animation can occur along with interactivity via JavaScript.
-It's ability to produce these graphics given the reverse engineering that's required is extraordinary.
-However, a significant issue is that while it allows for interesting graphics to be created, the ease at which this can be done is non-trivial.
+Many functions have been provided that allow for interactivity in processed plots.
+Examples of these functions include adding tooltips, animating graphical elements, linking related points.
 
-\section{Motivation for gridSVG}
+The approach \textsf{SVGAnnotation} takes to match SVG elements with graphical objects in \R{} requires knowledge of the expected SVG output of the \texttt{svg} device.
+This means that \textsf{SVGAnnotation} depends on the stability of the \texttt{svg} device in order to function correctly.
+It is amazing that \textsf{SVGAnnotation} has managed to produce such good results given the method it uses.
+
+\section{Motivation for \textsf{gridSVG}}
 
 Here it is discussed why the currently available \R{} packages are not suitable for the construction of web-based interactive graphics.
 
-We deem \textsf{animation} package to be unsuitable for our needs because of the lack of ``true" animation and it's notable dependencies on software that is not packaged.
-On top of this, the graphics it creates are likely to be space inefficient compared to a solution that uses true animation.
-This is because animation is done through a series of snapshots, rather than a description of the objects and how they are to be animated.
+We deem \textsf{animation} to be unsuitable for our needs because it does not provide any means of interactivity, only animation.
+Moreover, the animation is does produce is not the same as what we would like to use.
+Rather than drawing several plots to generate an animated image, we would rather draw a plot only once that has animation embedded within it.
+The distinction is similar to the difference between a cartoonist who has to draw every single frame, and a director that simply tells people what to do.
 
-The packages \textsf{webvis}, \textsf{googleVis} and \textsf{gWidgetsWWW} do create the kind of graphics we want, but they use other graphics systems to accomplish this.
+The packages \textsf{webvis} and \textsf{googleVis} are also unsuitable because they do not use \R{}'s graphics system to create their plots.
 We would like to use the facilities \R{} provides with its powerful graphics system to create animated and interactive graphics.
-This way we can ensure that the graphics we see in \R{} are what is actually going to be modified when we create our interactive plots.
+This way we can ensure that the graphics we see in \R{} are what is actually going to be drawn when we create our interactive plots.
 
-While \textsf{SVGAnnotation} can create the kind of graphics we desire, it is difficult to understand how it works.
-Because of this it is challenging to extend \textsf{SVGAnnotation}'s features to create animated and interactive graphics that are not provided out-of-the-box.
+\textsf{gWidgetsWWW} does create the kind of graphics we want to create, with facilities present for powerful interactivity.
+What it does not provide is any means of animating a plot once it has been created.
+It can only be done in a manner similar to \textsf{animation}, which is infeasible to serve frame by frame over the internet due to latency and network speed.
 
-\chapter{The design of gridSVG}
+\textsf{SVGAnnotation} can create the kind of graphics we desire, but it is difficult to understand how it works.
+This is due to a lack of transparency in its behaviour and the fact it relies on reverse engineering \R{}'s \texttt{svg} device's output.
+Because of this, it is challenging to extend \textsf{SVGAnnotation}'s features to create animated and interactive graphics that are not provided out-of-the-box.
+Another issue to consider is that if \textsf{SVGAnnotation} does not work as expected then there is little that a user can do.
 
-\section{What is grid? How does it work?}
-
-\begin{center}
-\begin{tikzpicture}[scale=3, >=triangle 45]
-\tikzstyle{every node}=[draw,shape=circle];
-\node[rounded rectangle, very thick] (grdev) at (1,1)  {\Large grDevices};
-\node[rounded rectangle, very thick] (gr) at (0,2) {\Large graphics};
-\node[rounded rectangle, very thick] (grid) at (2,2) {\Large grid};
-\node[rounded rectangle, very thick] (svg) at (0,0) {\Large svg};
-\node[rounded rectangle, very thick] (pdf) at (1,0) {\Large pdf};
-\node[rounded rectangle, very thick] (gridsvg) at (2,0) {\Large gridSVG};
-\draw [->, thick] (grdev) -- (svg);
-\draw [->, thick] (grdev) -- (pdf);
-\draw [->, thick] (gr) -- (grdev);
-\draw [->, thick] (grid) -- (grdev);
-\draw [->, thick] (grid) -- (gridsvg);
-\end{tikzpicture}
-\end{center}
-
-\section{What is SVG? Javascript?}
-
-\section{Mapping of grid grobs to SVG elements}
+PRESENTING... \gridSVG{}

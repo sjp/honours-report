@@ -100,7 +100,9 @@ library(ggplot2)
 \setcounter{page}{1}
 \renewcommand{\thepage}{\arabic{page}}
 
+\input{./tex/aim.tex}
 \input{./tex/introduction.tex}
+\input{./tex/gridsvg-design.tex}
 \input{./tex/process.tex}
 
 \begin{listing}[H]
