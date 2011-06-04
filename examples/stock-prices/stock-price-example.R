@@ -35,7 +35,8 @@ for (i in 1:length(unique(g$id))) {
   ys <- as.numeric(gy[[i]])
 
   for (j in 1:length(xs)) {
-    m[j, i] <- paste(xs[1:j], ",", ys[1:j], " ", sep="", collapse="")
+    m[j, i] <- paste(c(xs[1:j], rep(xs[j], length(xs) - j)), ",",
+                     c(ys[1:j], rep(ys[j], length(ys) - j)), " ", sep="", collapse="")
   }
 }
 
