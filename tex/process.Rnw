@@ -1,5 +1,9 @@
 \chapter{\gridSVG{} grows up}
 
+While \gridSVG{} was able to produce basic plots, it lacked the ability to handle many of \grid{}'s graphics objects.
+Moreover, \gridSVG{} did not have any understanding of many of the properties that \grid{} graphics objects have.
+This section details the processes and decisions made when extending \gridSVG{}.
+
 \section{Mapping of grid grobs to SVG elements}
 
     - CHECK the changes file !

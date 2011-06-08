@@ -1,0 +1,158 @@
+\chapter{The design of \textsf{gridSVG}}
+
+\section{What is \grid{}? How does it work?}
+
+In order to explain how \gridSVG{} works, we must first explain how \grid{} works.
+\grid{} \citep{Mur05} is a graphics system that is provided by \R{} along with the base graphics system.
+Two key features of \grid{} separate it from the base graphics system.
+The first of these features is the concept of viewports.
+Viewports are a convenient way of defining a plotting region and setting a drawing context.
+When using viewports, all drawing is relative to the coordinate system within the current viewport.
+
+\begin{listing}[H]
+\begin{rconsolecode}
+> library(grid)
+> grid.newpage()
+> grid.rect(gp = gpar(lty = "dashed")) # Showing viewport size
+> # Moving into a new viewport
+> pushViewport(viewport(x = 0.5, y = 0.5, height = 0.5,
++                       width = 0.5, just = c("left","bottom")))
+> grid.rect(gp = gpar(lty = "dashed")) # Showing viewport size
+> grid.circle() # Draws a circle as large as the current viewport
+> popViewport() # Leaving the viewport
+> grid.circle() # Draws a circle as large as the root viewport
+\end{rconsolecode}
+\caption{Using viewports to change the location and dimensions of the plotting region.}
+\label{lst:grid-viewport-example}
+\end{listing}
+
+\autoref{lst:grid-viewport-example} shows how the code used to produce a circle remains constant, but the position and dimensions of the circles are dependent on the viewports they were drawn in.
+The code produces the plot shown in \autoref{fig:grid-viewport-example}.
+
+\begin{figure}[H]
+\centering
+
+<<echo = FALSE, results = hide, fig = FALSE>>=
+pdf("grid-viewport-example.pdf")
+library(grid)
+grid.newpage()
+grid.rect(gp = gpar(lty = "dashed")) # Showing viewport size
+# Moving into a new viewport
+pushViewport(viewport(x = 0.5, y = 0.5, height = 0.5,
+                      width = 0.5, just = c("left", "bottom")))
+grid.rect(gp = gpar(lty = "dashed")) # Showing viewport size
+grid.circle() # Draws a circle as large as the current viewport
+popViewport() # Leaving the viewport
+grid.circle() # Draws a circle as large as the root viewport
+dev.off()
+@
+
+\includegraphics[width = 0.4\textwidth]{./grid-viewport-example.pdf}
+\caption{An example of grid viewports, produced by \autoref{lst:grid-viewport-example}.}
+\label{fig:grid-viewport-example}
+\end{figure}
+
+We can see that the application of viewports allows trellis graphics to be created relatively easily.
+Several packages provide high level functions that can create these complex plots, notably \textsf{lattice} \citep{Sar08} and \textsf{ggplot2} \citep{Wic09}.
+
+Another feature of \grid{} is that \grid{} graphics functions also produce graphics objects.
+A graphics object stores all of the information necessary for the object to be drawn.
+For example, \texttt{grid.rect()} creates a graphics object that gives \grid{} enough information to draw a rectangle, then draws it.
+Associated with every graphics object is a name, this name is an identifier that we can use to inspect or modify a graphics object.
+Each time a graphics object is drawn, it is recorded on \grid{}'s display list.
+This display list stores all of the graphics objects necessary for an image to be drawn.
+
+\begin{listing}[H]
+\begin{rconsolecode}
+> library(grid)
+> grid.newpage()
+> grid.rect()
+> grid.ls()
+GRID.rect.1
+\end{rconsolecode}
+\caption{Inspecting \grid{}'s display list.}
+\label{lst:grid-display-list-example}
+\end{listing}
+
+We can inspect \grid{}'s display list using the command \texttt{grid.ls()} to see which graphics objects have been drawn.
+The output of \texttt{grid.ls()} shows the names of these objects.
+Observing the example in \autoref{lst:grid-display-list-example} we can see that the name of the rectangle object that was produced by \texttt{grid.rect()} is in fact \texttt{GRID.rect.1}.
+
+The naming of graphics objects is particularly important, as we have a way of identifying graphics objects.
+When we create images using graphics devices we would like to be able to identify graphics objects using the same names.
+There are few image formats that \R{} supports that can do this, and only one of these formats is viable for use on the web.
+This format is SVG.
+Unfortunately when creating plots through \R{}'s \texttt{svg()} device, naming information is lost.
+\gridSVG{} intends to avoid losing names on graphics objects by creating an SVG image directly.
+When doing this, \gridSVG{} can annotate SVG elements with the same names as the \grid{} graphics objects on the display list.
+By retaining object names, we can use JavaScript to target these names and interact with the objects the names are associated with.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=2.5, >=triangle 45]
+\tikzstyle{every node}=[draw,shape=circle];
+\node[rounded rectangle, very thick] (grdev) at (1,1)  {\Large grDevices};
+\node[rounded rectangle, very thick] (gr) at (0,2) {\Large graphics};
+\node[rounded rectangle, very thick] (grid) at (2,2) {\Large grid};
+\node[rounded rectangle, very thick] (svg) at (0,0) {\Large svg};
+\node[rounded rectangle, very thick] (pdf) at (1,0) {\Large pdf};
+\node[rounded rectangle, very thick] (gridsvg) at (2,0) {\Large gridSVG};
+\draw [->, thick] (grdev) -- (svg);
+\draw [->, thick] (grdev) -- (pdf);
+\draw [->, thick] (gr) -- (grdev);
+\draw [->, thick] (grid) -- (grdev);
+\draw [->, thick] (grid) -- (gridsvg);
+\end{tikzpicture}
+\label{fig:grid-system}
+\caption{Instead of using \textsf{grDevices} to create an SVG image for a \grid{} plot, \gridSVG{} can create the image directly.}
+\end{figure}
+
+\section{What are SVG and JavaScript?}
+
+SVG (Scalable Vector Graphics) is an XML-based format for describing two-dimensional vector images.
+SVG images are described using text, therefore we can use the facilities present in \R{} to write text to a file to create SVG images.
+
+\begin{listing}[H]
+\begin{xmlcode}
+<svg height="100" width="100">
+  <rect id="example-rectangle"
+        x="30" y="20" height="50" width="30" />
+</svg>
+\end{xmlcode}
+\caption{A basic SVG image.}
+\label{lst:svg-syntax-example}
+\end{listing}
+
+\begin{figure}[H]
+\centering
+\fbox{\includegraphics[width = 0.4\textwidth]{./images/svg-example.pdf}}
+\caption{The rendered image produced by \autoref{lst:svg-syntax-example}.}
+\label{fig:svg-syntax-example}
+\end{figure}
+
+We can see that the XML code used to produce the image in \autoref{fig:svg-syntax-example} is quite readable.
+An SVG image has been created that is 100 by 100 units.
+It contains a \texttt{rect} element that is positioned at (30, 20) and is 30 units wide by 50 units high.
+Note that in SVG, the origin is located at the top-left of the plotting region, while in \R{} it is at the bottom-left of the plotting region.
+This means that higher $y$ values correspond to lower positions on the plotting region.
+Another important thing to note is the \texttt{id} attribute, which \gridSVG{} will use when naming SVG elements.
+
+SVG can also be modified after it has been loaded in a browser through the use of JavaScript.
+JavaScript is a web-based scripting language that is well-supported by modern web browsers.
+\gridSVG{} makes use of JavaScript to provide interactivity with the graphics it produces by embedding it within an SVG image.
+
+\section{Mapping of \grid{} graphics to SVG elements}
+
+The approach \gridSVG{} takes when creating an SVG image is to first capture all of the graphics objects and viewports present in a plot.
+Extra information can then be added to specific graphics objects if interaction or animation is to occur on them.
+Once the additional annotation of graphics objects has taken place, \gridSVG{} attempts to write out the information it has available to it.
+
+Writing to SVG requires that for each \grid{} graphics object, there is mapping to SVG elements that adequately represent the \grid{} graphics object.
+For many graphics objects, this task is simple as there is a direct mapping between a \grid{} graphics object and an SVG element.
+An example of this is a \texttt{rectGrob} (produced by \texttt{grid.rect()}) mapping to a \texttt{<rect />}.
+However, for other elements this is not so straightforward because the mapping is not obvious.
+This will be further explained in Section 4.
+
+The extra information that is annotated to \grid{} graphics objects also requires translating to SVG.
+This can mean adding attributes on the SVG element that the graphics object maps to, this is the case when ``garnishing" a graphics object with extra attributes.
+However, when animating graphics objects, additional SVG elements must be used to store animation information.
