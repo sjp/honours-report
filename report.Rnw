@@ -55,7 +55,7 @@
 
 % Document properties.
 \newcommand{\doctitle}{Web-based Interactive Graphics with gridSVG}
-\newcommand{\docauthor}{Simon Potter}
+\newcommand{\docauthor}{Simon J. Potter}
 \newcommand{\docdate}{June 27, 2011}
 \title{\doctitle{}}
 \author{\docauthor{}}
