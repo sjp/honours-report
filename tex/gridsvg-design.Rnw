@@ -14,20 +14,26 @@ When using viewports, all drawing is relative to the coordinate system within th
 > library(grid)
 > grid.newpage()
 > grid.rect(gp = gpar(lty = "dashed")) # Showing viewport size
+> grid.circle() # Draws a circle as large as the root viewport
 > # Moving into a new viewport
 > pushViewport(viewport(x = 0.5, y = 0.5, height = 0.5,
 +                       width = 0.5, just = c("left","bottom")))
 > grid.rect(gp = gpar(lty = "dashed")) # Showing viewport size
 > grid.circle() # Draws a circle as large as the current viewport
 > popViewport() # Leaving the viewport
-> grid.circle() # Draws a circle as large as the root viewport
 \end{rconsolecode}
 \caption{Using viewports to change the location and dimensions of the plotting region.}
 \label{lst:grid-viewport-example}
 \end{listing}
 
-\autoref{lst:grid-viewport-example} shows how the code used to produce a circle remains constant, but the position and dimensions of the circles are dependent on the viewports they were drawn in.
-The code produces the plot shown in \autoref{fig:grid-viewport-example}.
+\autoref{lst:grid-viewport-example} demonstrates how the code used to produce a circle remains constant, but the position and dimensions of the circles are dependent on the viewports they were drawn in.
+This is shown by first drawing a dashed rectangle to show the size of the entire plotting region.
+A circle is then drawn as large as the size of the viewport it is being drawn in.
+The root viewport is as large as the entire plotting region, because of this, so is the circle that is being drawn by \texttt{grid.circle()}.
+Following this, a new viewport is created that occupies the top-right quadrant of the plot.
+Now when we use the same code to produce the dashed rectangle and the circle, it now only draws within the top-right quadrant.
+The final line, calling \texttt{popViewport()}, leaves the viewport positioned in the top-right quadrant and returns to the root viewport.
+The code in \autoref{lst:grid-viewport-example} produces the plot shown in \autoref{fig:grid-viewport-example}.
 
 \begin{figure}[H]
 \centering
@@ -37,13 +43,13 @@ pdf("grid-viewport-example.pdf")
 library(grid)
 grid.newpage()
 grid.rect(gp = gpar(lty = "dashed")) # Showing viewport size
+grid.circle() # Draws a circle as large as the root viewport
 # Moving into a new viewport
 pushViewport(viewport(x = 0.5, y = 0.5, height = 0.5,
                       width = 0.5, just = c("left", "bottom")))
 grid.rect(gp = gpar(lty = "dashed")) # Showing viewport size
 grid.circle() # Draws a circle as large as the current viewport
 popViewport() # Leaving the viewport
-grid.circle() # Draws a circle as large as the root viewport
 dev.off()
 @
 
@@ -52,8 +58,9 @@ dev.off()
 \label{fig:grid-viewport-example}
 \end{figure}
 
-We can see that the application of viewports allows trellis graphics to be created relatively easily.
+The application of viewports allows trellis graphics to be created relatively easily.
 Several packages provide high level functions that can create these complex plots, notably \textsf{lattice} \citep{Sar08} and \textsf{ggplot2} \citep{Wic09}.
+Viewports are applied in the \textsf{lattice} package, where each strip and panel is a viewport for graphics objects to be drawn in.
 
 Another feature of \grid{} is that \grid{} graphics functions also produce graphics objects.
 A graphics object stores all of the information necessary for the object to be drawn.
