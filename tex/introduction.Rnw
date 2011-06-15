@@ -48,11 +48,11 @@ A package developed by \citet{Lan10} that generates animated, interactive graphi
 It leverages \R{}'s \texttt{svg} graphics device by post-processing its output to see which SVG elements correspond with specific components of a plot.
 After performing the post-processing, animation can occur along with interactivity via JavaScript.
 Many functions have been provided that allow for interactivity in processed plots.
-Examples of these functions include adding tooltips, animating graphical elements, linking related points.
+Examples of these functions include adding tooltips, animating graphical elements and linking related points.
 
 \section{Motivation for \textsf{gridSVG}}
 
-Here it is discussed why the currently available \R{} packages are not suitable for our needs when creating web-based interactive graphics.
+Here we discuss why the currently available \R{} packages are not suitable for our needs when creating web-based interactive graphics.
 
 We deem \textsf{animation} to be unsuitable for our needs because it does not provide any means of interactivity, only animation.
 Moreover, the animation is does produce is unsuitable.

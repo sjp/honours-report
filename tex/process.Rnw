@@ -6,41 +6,309 @@ This section details the processes and decisions made when extending \gridSVG{}.
 
 \section{Mapping of grid grobs to SVG elements}
 
-    - CHECK the changes file !
-
 \subsection{Grobs and sub-grobs}
 
-    - Grobs with ids -> multiple grobs -> multiple elements -> grouping
+When translating \grid{} graphics objects to SVG, there are cases where a one-to-one mapping cannot occur.
+The reason why this happens is because one \grid{} graphics object can require many SVG elements to represent it.
+Multiple elements are necessary due to \grid{} graphics objects being able to represent what appears to be multiple graphics objects.
+This happens when a single call to a \grid{} function produces several visually distinct graphical objects.
 
-    - Grobs -> multiple elements, grouping
+Some \grid{} graphics functions provide a way of producing what appears to be multiple graphics objects through the use of an \texttt{id} parameter.
+The reason for this parameter is because multiple graphics are unable to be produced in a single function call without it.
+An example of one of these functions is \texttt{grid.polyline()}.
+A polyline is a collection of lines, meaning that a single call to \texttt{grid.polyline()} can produce the same results as several calls to \texttt{grid.lines()}.
+The \texttt{id} parameter is significant in \texttt{grid.polyline()} because it provides a way of separating the list of $x$s and $y$s into different lines.
+
+\begin{listing}[H]
+\begin{rconsolecode}
+> grid.polyline(x=c((0:4)/10, rep(.5, 5), (10:6)/10, rep(.5, 5)),
++               y=c(rep(.5, 5), (10:6/10), rep(.5, 5), (0:4)/10),
++               id=rep(1:5, 4),
++               gp=gpar(col=1:5, lwd=3))
+\end{rconsolecode}
+\caption{Using the \texttt{id} parameter to specify multiple lines.}
+\label{lst:grid-polyline-example}
+\end{listing}
+
+\autoref{lst:grid-polyline-example} features three notable parameters, \texttt{x}, \texttt{y} and \texttt{id}.
+Both \texttt{x} and \texttt{y} are point coordinates for a line to follow.
+This means that each element of \texttt{x} corresponds with an element in \texttt{y}.
+The \texttt{id} parameter specifies which line each point belongs to.
+In this example, the vector that \texttt{id} holds is $1..5$, repeated four times.
+This means that for the line with the \texttt{id} of 1, we expect the point coordinates to have indices of 1, 6, 11 and 16 because those the the indices where 1 appears in the \texttt{id} vector.
+Given that the \texttt{id} parameter has 5 unique values we can determine that 5 lines are being drawn.
+Using the mechanism described earlier we can determine which points belong to each of these 5 lines.
+When drawn, the code from \autoref{lst:grid-polyline-example} produces what appears in \autoref{fig:grid-polyline-example}.
+
+\begin{figure}[H]
+\centering
+
+<<echo = FALSE, results = hide, fig = FALSE>>=
+pdf("grid-polyline-example.pdf")
+library(grid)
+grid.newpage()
+grid.polyline(x=c((0:4)/10, rep(.5, 5), (10:6)/10, rep(.5, 5)),
+              y=c(rep(.5, 5), (10:6/10), rep(.5, 5), (0:4)/10),
+              id=rep(1:5, 4),
+              gp=gpar(col=1:5, lwd=3))
+dev.off()
+@
+
+\fbox{\includegraphics[width=0.4\textwidth]{./grid-polyline-example.pdf}}
+\caption{Creating a polyline using the \texttt{id} parameter, produced by \autoref{lst:grid-polyline-example}.}
+\label{fig:grid-polyline-example}
+\end{figure}
+
+While it is the case that some \grid{} graphics functions are able to create what appear to be multiple objects by using the \texttt{id} parameter, this is not the case with most \grid{} graphics functions.
+Most \grid{} graphics functions are vectorised so that they can handle a vector for a parameter instead of a scalar value.
+An example of such a function is \texttt{grid.circle()}.
+\texttt{grid.circle()} has three key parameters, \texttt{x}, \texttt{y} and \texttt{r}.
+These parameters govern the $x$ position, $y$ position and radius of the circle respectively.
+If we provide more than one value for any of these parameters, more than one circle will be drawn.
+An example of this in action is provided in \autoref{lst:grid-circle-vector-example}
+
+\begin{listing}[H]
+\begin{rconsolecode}
+> grid.circle(x = c(0.2, 0.7), y = c(0.2, 0.7),
++             r = 0.1, gp = gpar(fill = "black"))
+\end{rconsolecode}
+\caption{Using vectorised parameters to create multiple circles.}
+\label{lst:grid-circle-vector-example}
+\end{listing}
+
+By providing two values for the \texttt{x} and \texttt{y} parameters, we are determining the locations of the two circles that are to be drawn.
+These locations are (0.2, 0.2) for the first circle and (0.7, 0.7) for the second circle.
+Given that the \texttt{r} parameter is a constant of 0.1, we know that both circles are going to have the same radius.
+This produces the plot shown in \autoref{fig:grid-circle-vector-example}.
+
+\begin{figure}[H]
+\centering
+
+<<echo = FALSE, results = hide, fig = FALSE>>=
+pdf("grid-circle-vector-example.pdf")
+library(grid)
+grid.newpage()
+grid.circle(x = c(0.2, 0.7), y = c(0.2, 0.7),
+            r = 0.1, gp = gpar(fill = "black"))
+dev.off()
+@
+
+\fbox{\includegraphics[width=0.4\textwidth]{./grid-circle-vector-example.pdf}}
+\caption{Multiple circles created using one \grid{} function call, produced by \autoref{lst:grid-circle-vector-example}.}
+\label{fig:grid-circle-vector-example}
+\end{figure}
+
+In both of the cases where a single \grid{} graphics object produces multiple graphical elements we are presented with a problem when writing to SVG.
+The issue is that SVG has no single elements which can represent the graphics objects that \grid{} produces.
+We are forced to produce multiple elements for graphics objects where more than graphical element is produced.
+
+The response to the multiple element problem was to create new graphics objects, one for each of the graphical elements that was produced by the function call.
+These new graphics objects are what is written to SVG, not the object that originally produced it.
+For example, if a call to \texttt{grid.circle()} produces four circles, then we create four circle objects that produce the same result as the call to \texttt{grid.circle()}.
+
+Unfortunately this introduces a problem relating to the naming of SVG elements.
+We would like the names of the SVG elements to match the names of our \grid{} graphics objects.
+If we create multiple SVG elements for a single \grid{} graphics object, the original name cannot be applied to multiple SVG elements.
+This is because SVG requires the name of each SVG element to be unique.
+This problem can be resovled by determining an appropriate naming scheme for cases where multiple SVG elements are produced.
+
+When multiple SVG elements are produced by a \grid{} graphics function with an \texttt{id} parameter, the naming scheme is simple.
+We name each of the resulting elements by using the original name of the graphics object, suffixed by a full stop and the \texttt{id} of the graphics object.
+For example, if a \grid{} \texttt{polyline} is named \texttt{GRID.polyline.1}, then the line created using an \texttt{id} of 2 creates an SVG element with the name \texttt{GRID.polyline.1.2}.
+
+\grid{} graphics functions that lack an \texttt{id} parameter have a similar naming scheme.
+Instead of having an \texttt{id} determine the new name, we instead use the order in which the new graphical objects are created.
+For example, returning to \autoref{lst:grid-circle-vector-example}, we know that two circles are being created.
+The first circle is determined to be the circle located at (0.2, 0.2), because of this it would be given a suffix of 1.
+If the name of the \grid{} circle object is \texttt{GRID.circle.1}, then the first circle that is being produced is going to be named \texttt{GRID.circle.1.1}.
+
+These naming schemes do solve the problem of non-unique names but we no longer have the original name of the graphics object available to us.
+The solution to this is to use an SVG group element (\texttt{<g>}).
+A group element does not change the appearance of an SVG image, but it allows the collection of related elements.
+This means we can group the multiple elements produced by a graphics object under one group element.
+The group element can then be assigned the name of the \grid{} graphics object and is guaranteed to be unique.
+
+We can demonstrate this naming scheme by showing the SVG that \texttt{gridSVG} produces from \autoref{lst:grid-circle-vector-example}.
+The relevant subset of the resulting SVG image is shown \autoref{lst:gridsvg-circle-vector-example}.
+
+\begin{listing}[H]
+\begin{xmlcode}
+<g id="GRID.circle.1">
+  <circle id="GRID.circle.1.1" ... />
+  <circle id="GRID.circle.1.2" ... />
+</g>
+\end{xmlcode}
+\caption{Demonstrating the naming scheme applied when creating multiple elements.}
+\label{lst:gridsvg-circle-vector-example}
+\end{listing}
+
+To ensure consistency in the SVG output that \gridSVG{} produces, every graphics object will be grouped.
+This is the case even when multiple elements are not produced from a single \grid{} graphics object.
+If we observe \autoref{lst:gridsvg-circle-vector-example}, the output would only be slightly different if \texttt{GRID.circle.1} only produced one circle.
+The effect of this would be that the line containing the \texttt{<circle>} named \texttt{GRID.circle.1.2} will be absent.
+That modified example does not require multiple elements to be created because only a single circle is created, but grouping does ensure consistent output.
 
 \subsection{Opacity}
 
-    - col, fill, alpha
+A feature of \grid{} graphics that \gridSVG{} was not previously aware of is opacity.
+Without the support of this feature, semi-transparent graphics objects cannot be drawn.
+
+\grid{} has three ways of applying opacity to graphics objects.
+All of these methods use the \texttt{gp} parameter that is present in all \grid{} graphics objects to apply the opacity.
+The \texttt{gp} parameter takes a \texttt{gpar()} object that determines the appearance of a graphics object.
+It is with this \texttt{gpar()} object that we can apply semi-transparency to a graphics object.
+
+The \texttt{gpar()} object has three parameters that we are concerned with, \texttt{col}, \texttt{fill} and \texttt{alpha}.
+\texttt{col} determines the colour of lines and borders.
+We can assign to this parameter a colour created by \R{}'s \texttt{rgb()} function.
+The \texttt{rgb()} function allows us to specify colours by its RGB components, but we also have access to an \texttt{alpha} parameter.
+This is where we determine how transparent a colour can be.
+By creating a colour with an alpha value less than 1, a colour can be semi-transparent.
+
+\texttt{fill} behaves in some way as \texttt{col}, only differing in how the colour is applied. 
+Rather than defining the colour of lines and borders, it defines the colour used to fill graphics objects like rectangles and polygons.
+
+\texttt{alpha} is the graphical parameter that applies opacity to the entire graphics object.
+This parameter is applied on top the colours set for \texttt{col} and \texttt{fill}.
+This means that a rectangle with semi-transparent borders will be even more transparent after applying an \texttt{alpha} parameter lower than 1.
+
+\begin{listing}[H]
+\begin{rconsolecode}
+> library(grid)
+> grid.newpage()
+> grid.circle(r = 0.2, gp = gpar(col = rgb(0, 0, 0, 0.5),
++                                fill = "black",
++                                lwd = 30))
+> grid.newpage()
+> grid.circle(r = 0.2, gp = gpar(col = "black",
++                                fill = rgb(0, 0, 0, 0.5),
++                                lwd = 30))
+> grid.newpage()
+> grid.circle(r = 0.2, gp = gpar(col = "black",
++                                fill = rgb(0, 0, 0, 0.5),
++                                alpha = 0.5,
++                                lwd = 30))
+\end{rconsolecode}
+\caption{Creating circles with semi-transparent components.}
+\label{lst:grid-opacity-example}
+\end{listing}
+
+\autoref{lst:grid-opacity-example} illustrates the difference between each of these parameters.
+All three of the circles that are being drawn would be a solid black circle if not for semi-transparency.
+In all three examples, the background is white, but it could be any colour.
+
+The first circle draws a grey border because it has an alpha component of 0.5.
+This means that half of its colour is provided by the black colour, and half by the white background.
+The second circle does the same thing but has a semi-transparent fill instead of a semi-transparent border.
+
+The final circle that is being drawn is the same as the second circle but with the \texttt{alpha} parameter set to 0.5.
+The effect this has is multiplying the alpha components of the \texttt{col} and \texttt{fill} colours by 0.5.
+This means that a circle will be drawn as if it had a black border with an alpha component of 0.5.
+The circle will also be drawn as if the fill colour had alpha component of 0.25.
+
+The circles drawn from \autoref{lst:grid-opacity-example} produce the figures in \autoref{fig:grid-opacity-example}.
+
+\begin{figure}[H]
+\centering
+
+<<echo = FALSE, results = hide, fig = FALSE>>=
+pdf("grid-opacity-example-1.pdf")
+library(grid)
+grid.newpage()
+grid.circle(r = 0.2, gp = gpar(col = rgb(0, 0, 0, 0.5),
+                               fill = "black",
+                               lwd = 30))
+dev.off()
+
+pdf("grid-opacity-example-2.pdf")
+library(grid)
+grid.newpage()
+grid.circle(r = 0.2, gp = gpar(col = "black",
+                               fill = rgb(0, 0, 0, 0.5),
+                               lwd = 30))
+dev.off()
+
+pdf("grid-opacity-example-3.pdf")
+library(grid)
+grid.newpage()
+grid.circle(r = 0.2, gp = gpar(col = "black",
+                               fill = rgb(0, 0, 0, 0.5),
+                               alpha = 0.5,
+                               lwd = 30))
+dev.off()
+@
+
+\begin{subfigure}[c]{0.25\textwidth}
+\centering
+\fbox{\includegraphics[width = \textwidth]{./grid-opacity-example-1.pdf}}
+\caption{A circle with a semi-transparent border being applied.}
+\label{fig:grid-opacity-example-1}
+\end{subfigure}
+\hspace{0.06\textwidth}
+\begin{subfigure}[c]{0.25\textwidth}
+\centering
+\fbox{\includegraphics[width = \textwidth]{./grid-opacity-example-2.pdf}}
+\caption{Filling the circle with a semi-transparent colour.}
+\label{fig:grid-opacity-example-2}
+\end{subfigure}
+\hspace{0.06\textwidth}
+\begin{subfigure}[c]{0.25\textwidth}
+\centering
+\fbox{\includegraphics[width = \textwidth]{./grid-opacity-example-3.pdf}}
+\caption{A circle with a semi-transparent fill, with an \texttt{alpha} parameter of 0.5.}
+\label{fig:grid-opacity-example-3}
+\end{subfigure}
+
+\caption{Circles with semi-transparency applied, produced by \autoref{lst:grid-opacity-example}.}
+\label{fig:grid-opacity-example}
+\end{figure}
+
+\gridSVG{} must therefore translate the \grid{} graphical parameters to SVG, but also ensure the same behaviour is applied when semi-transparency is present.
+Conveniently, the translation is a simple mapping with the same behaviour being applied to semi-transparent elements in SVG.
+This translation is shown in \autoref{tbl:opacity-mapping}.
+
+\begin{table}[H]
+\centering
+
+\begin{tabular}{l l}
+\grid{} Graphical Parameter & SVG Styling Parameter \\
+\midrule
+\texttt{col} & \texttt{stroke} \& \texttt{stroke-opacity} \\
+\texttt{fill} & \texttt{fill} \& \texttt{fill-opacity} \\
+\texttt{alpha} & \texttt{opacity}
+\end{tabular}
+\caption{Mapping colours and opacities from \grid{} to SVG.}
+\label{tbl:opacity-mapping}
+\end{table}
+
+While the mapping from \texttt{alpha} is a straightforward and one-to-one, the \texttt{col} and \texttt{fill} parameters require explanation.
+SVG requires that colours be specified separately from the associated opacity.
+This is explains why \texttt{col} (and similarly \texttt{fill}) needs to be translated to both \texttt{stroke} and \texttt{stroke-opacity}.
 
 \subsection{X-splines}
 
-    - Decision over paths or lines
+%    - Decision over paths or lines
 
 \subsection{Markers}
-    - Markers
+
+%    - Markers
 
 \subsection{Multi-line text}
 
-    - Text justification and grobHeight
+%    - Text justification and grobHeight
 
-    - problems with fonts?
+%    - problems with fonts?
 
 \subsection{Fonts}
 
-    - Fonts (explain [get/set]SVGFonts)
+%    - Fonts (explain [get/set]SVGFonts)
 
 \subsection{gTrees, viewports, frames and cellGrobs}
 
-    - gTrees \& viewports
+%    - gTrees \& viewports
 
-    - frames (and cells)
+%    - frames (and cells)
 
 \subsection{Viewport clipping}
 
-    - Clipping
+%    - Clipping

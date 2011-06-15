@@ -28,10 +28,10 @@ When using viewports, all drawing is relative to the coordinate system within th
 
 \autoref{lst:grid-viewport-example} demonstrates how the code used to produce a circle remains constant, but the position and dimensions of the circles are dependent on the viewports they were drawn in.
 This is shown by first drawing a dashed rectangle to show the size of the entire plotting region.
-A circle is then drawn as large as the size of the viewport it is being drawn in.
+A circle is then drawn as large as the size of the viewport it occupies.
 The root viewport is as large as the entire plotting region, because of this, so is the circle that is being drawn by \texttt{grid.circle()}.
 Following this, a new viewport is created that occupies the top-right quadrant of the plot.
-Now when we use the same code to produce the dashed rectangle and the circle, it now only draws within the top-right quadrant.
+Now when we use the same code to produce the dashed rectangle and the circle, it only draws within the top-right quadrant.
 The final line, calling \texttt{popViewport()}, leaves the viewport positioned in the top-right quadrant and returns to the root viewport.
 The code in \autoref{lst:grid-viewport-example} produces the plot shown in \autoref{fig:grid-viewport-example}.
 
@@ -60,7 +60,7 @@ dev.off()
 
 The application of viewports allows trellis graphics to be created relatively easily.
 Several packages provide high level functions that can create these complex plots, notably \textsf{lattice} \citep{Sar08} and \textsf{ggplot2} \citep{Wic09}.
-Viewports are applied in the \textsf{lattice} package, where each strip and panel is a viewport for graphics objects to be drawn in.
+\textsf{lattice} uses viewports to create strips and panels within its plots, where each strip and panel is a viewport for graphics objects to be drawn in.
 
 Another feature of \grid{} is that \grid{} graphics functions also produce graphics objects.
 A graphics object stores all of the information necessary for the object to be drawn.
@@ -85,34 +85,89 @@ We can inspect \grid{}'s display list using the command \texttt{grid.ls()} to se
 The output of \texttt{grid.ls()} shows the names of these objects.
 Observing the example in \autoref{lst:grid-display-list-example} we can see that the name of the rectangle object that was produced by \texttt{grid.rect()} is in fact \texttt{GRID.rect.1}.
 
-The naming of graphics objects is particularly important, as we have a way of identifying graphics objects.
-When we create images using graphics devices we would like to be able to identify graphics objects using the same names.
-There are few image formats that \R{} supports that can do this, and only one of these formats is viable for use on the web.
-This format is SVG.
-Unfortunately when creating plots through \R{}'s \texttt{svg()} device, naming information is lost.
-\gridSVG{} intends to avoid losing names on graphics objects by creating an SVG image directly.
-When doing this, \gridSVG{} can annotate SVG elements with the same names as the \grid{} graphics objects on the display list.
-By retaining object names, we can use JavaScript to target these names and interact with the objects the names are associated with.
+\begin{listing}[H]
+\begin{rconsolecode}
+> grid.ls()
+GRID.rect.1
+> grid.edit("GRID.rect.1", gp = gpar(fill = "yellow"))
+\end{rconsolecode}
+\caption{Modifying a \grid{} graphics object.}
+\label{lst:grid-edit-example}
+\end{listing}
+
+The record of graphics objects in the display list also allows us to modify them.
+\autoref{lst:grid-edit-example} demonstrates object modification by changing the colour of the rectangle that was drawn in \autoref{lst:grid-display-list-example}.
+This is possible through the use of \texttt{grid.edit()}, which modifies existing graphics objects by specifying the name of the object to be modified as its first parameter.
+Any parameters following the object name are properties of the graphics object that being modified.
+In \autoref{lst:grid-edit-example}, the rectangle called \texttt{GRID.rect.1} will be filled with yellow instead of being transparent.
+\autoref{fig:grid-edit-example} shows the effect of \texttt{grid.edit()} on \texttt{GRID.rect.1}.
 
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}[scale=2.5, >=triangle 45]
-\tikzstyle{every node}=[draw,shape=circle];
-\node[rounded rectangle, very thick] (grdev) at (1,1)  {\Large grDevices};
-\node[rounded rectangle, very thick] (gr) at (0,2) {\Large graphics};
-\node[rounded rectangle, very thick] (grid) at (2,2) {\Large grid};
-\node[rounded rectangle, very thick] (svg) at (0,0) {\Large svg};
-\node[rounded rectangle, very thick] (pdf) at (1,0) {\Large pdf};
-\node[rounded rectangle, very thick] (gridsvg) at (2,0) {\Large gridSVG};
-\draw [->, thick] (grdev) -- (svg);
-\draw [->, thick] (grdev) -- (pdf);
-\draw [->, thick] (gr) -- (grdev);
-\draw [->, thick] (grid) -- (grdev);
-\draw [->, thick] (grid) -- (gridsvg);
-\end{tikzpicture}
-\label{fig:grid-system}
-\caption{Instead of using \textsf{grDevices} to create an SVG image for a \grid{} plot, \gridSVG{} can create the image directly.}
+
+<<echo = FALSE, results = hide, fig = FALSE>>=
+library(grid)
+pdf("grid-edit-example-before.pdf")
+grid.newpage()
+grid.rect()
+dev.off()
+
+pdf("grid-edit-example-after.pdf")
+grid.newpage()
+grid.rect(gp = gpar(fill = "yellow"))
+dev.off()
+@
+
+\begin{subfigure}[c]{0.3\textwidth}
+\centering
+\includegraphics[width=\textwidth]{./grid-edit-example-before.pdf}
+\caption{A rectangle produced by \texttt{grid.rect()}.}
+\label{fig:grid-edit-example-before}
+\end{subfigure}
+\hspace{0.2\textwidth}
+\begin{subfigure}[c]{0.3\textwidth}
+\centering
+\includegraphics[width=\textwidth]{./grid-edit-example-after.pdf}
+\caption{The same rectange modified to be filled with yellow.}
+\label{fig:grid-edit-example-after}
+\end{subfigure}
+\caption{Modifying an existing graphics object, produced by \autoref{lst:grid-edit-example}.}
+\label{fig:grid-edit-example}
 \end{figure}
+
+The naming of graphics objects is particularly important, as we have a way of identifying graphics objects.
+If we can identify an object, then modifying it is possible.
+This is the main reason why we are targetting the \grid{} graphics engine and cannot use the base graphics engine.
+To demonstrate this, if we were to draw a plot using functions provided by the \textsf{graphics} package, e.g. the \texttt{plot()} function, we cannot modify elements of the plot once it is drawn.
+\autoref{fig:graphics-plot} creates a plot of random variates but if we wanted to change the $x$ and $y$ axis labels we are forced to draw a new plot.
+
+\begin{figure}[H]
+\centering
+
+\begin{subfigure}[c]{0.4\textwidth}
+\centering
+\begin{minted}[frame = single]{rconsole}
+> plot(rnorm(10), rnorm(10))
+\end{minted}
+\label{lst:graphics-plot-example}
+\end{subfigure}
+\begin{subfigure}[c]{0.5\textwidth}
+
+<<echo = FALSE, results = hide, fig = FALSE>>=
+pdf("graphics-plot-example.pdf")
+plot(rnorm(10), rnorm(10))
+@
+
+\includegraphics[width = \textwidth]{./graphics-plot-example.pdf}
+\label{fig:graphics-plot-example}
+\end{subfigure}
+\caption{A basic plot created using the \textsf{graphics} package.}
+\label{fig:graphics-plot}
+\end{figure}
+
+When saving \grid{} plots, we would like to retain the ability to identify graphics objects on plots we have saved.
+There are few image formats that \R{} supports that can do this, and only one of these formats is viable for use on the web.
+This format is SVG.
 
 \section{What are SVG and JavaScript?}
 
@@ -122,7 +177,7 @@ SVG images are described using text, therefore we can use the facilities present
 \begin{listing}[H]
 \begin{xmlcode}
 <svg height="100" width="100">
-  <rect id="example-rectangle"
+  <rect id="example"
         x="30" y="20" height="50" width="30" />
 </svg>
 \end{xmlcode}
@@ -147,19 +202,135 @@ Another important thing to note is the \texttt{id} attribute, which \gridSVG{} w
 SVG can also be modified after it has been loaded in a browser through the use of JavaScript.
 JavaScript is a web-based scripting language that is well-supported by modern web browsers.
 \gridSVG{} makes use of JavaScript to provide interactivity with the graphics it produces by embedding it within an SVG image.
+By extending the example from \autoref{lst:svg-syntax-example} we can demonstrate how JavaScript can modify an SVG image.
+
+\begin{listing}[H]
+\begin{xmlcode}
+<svg height="100" width="100">
+  <rect id="example" onmouseover="setYellow(evt)"
+        x="30" y="20" height="50" width="30" />
+  <script type="text/ecmascript">
+    function setYellow(evt) {
+      var rect = evt.target;
+      rect.style.setProperty("fill", "yellow");
+    }
+  </script>
+</svg>
+\end{xmlcode}
+\caption{An interactive SVG image.}
+\label{lst:svg-hover-example}
+\end{listing}
+
+The image in \autoref{lst:svg-hover-example} features a couple of additions that require explanation.
+The first of these changes is the addition of a \texttt{<script>} element.
+Within this \texttt{<script>} element is the definition of a \texttt{setYellow()} function.
+It takes a single parameter, \texttt{evt}, which contains information about the event that triggered its execution.
+The first line of the function finds out which element triggered the event, and refers to it as \texttt{rect}.
+The second line modifies \texttt{rect} so that instead of being coloured black, it is coloured yellow.
+
+The other change to the image is the addition of an \texttt{onmouseover} attribute to the rectangle element.
+This is a special attribute that executes any JavaScript code assigned to it when a mouse cursor hovers over the element.
+In this example, when a mouse cursor hovers over the \mbox{\texttt{<rect />}} element, the JavaScript function \texttt{setYellow()} will be executed.
+
+The effect of both of these changes is that this new SVG image appears the same as \autoref{fig:svg-syntax-example} until a mouse hovers over the rectangle.
+When this occurs its colour changes from black to yellow.
+This is shown in \autoref{fig:svg-hover-example}.
+
+This combination of JavaScript and SVG is how \gridSVG{} is going to implement interactivity in its plots.
+
+\begin{figure}[H]
+\centering
+
+\begin{subfigure}[c]{0.4\textwidth}
+\centering
+\fbox{\includegraphics[width = \textwidth]{./images/svg-hover-example-before.png}}
+\caption{The rendered image prior to any changes.}
+\label{fig:svg-hover-example-before}
+\end{subfigure}
+\hspace{0.1\textwidth}
+\begin{subfigure}[c]{0.4\textwidth}
+\centering
+\fbox{\includegraphics[width = \textwidth]{./images/svg-hover-example-after.png}}
+\caption{Triggering a colour change by moving the cursor over the rectangle.}
+\label{fig:svg-hover-example-before}
+\end{subfigure}
+
+\caption{The SVG image produced by \autoref{lst:svg-hover-example}.}
+\label{fig:svg-hover-example}
+\end{figure}
 
 \section{Mapping of \grid{} graphics to SVG elements}
 
-The approach \gridSVG{} takes when creating an SVG image is to first capture all of the graphics objects and viewports present in a plot.
+The task we would like to accomplish is creating SVG images in \R{} with the ability to animate and interact with these images.
+Unfortunately we cannot use \R{}'s \texttt{svg()} device to create these plots.
+The reason for this is that the \texttt{svg()} device is only concerned with ensuring that the appearance of SVG output is accurate.
+This means that plots created using the \texttt{svg()} device are not animated, nor are they able to be modified using JavaScript because the device does not provide the ability to include this information.
+
+\gridSVG{} intends to write to SVG, but with the ability to include information necessary for animation and interactivity to occur.
+This requires us to write directly from \grid{} to SVG and avoid the \texttt{svg()} device altogether.
+An illustration of how \gridSVG{} differs from most graphics devices is provided in \autoref{fig:grid-system}.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=2.2, >=triangle 45]
+\tikzstyle{every node}=[draw,shape=circle];
+\node[rounded rectangle, very thick] (grdev) at (1,1)  {\Large grDevices};
+\node[rounded rectangle, very thick] (gr) at (0,2) {\Large graphics};
+\node[rounded rectangle, very thick] (grid) at (2,2) {\Large grid};
+\node[rounded rectangle, very thick] (svg) at (0,0) {\Large svg};
+\node[rounded rectangle, very thick] (pdf) at (1,0) {\Large pdf};
+\node[rounded rectangle, very thick] (gridsvg) at (2,0) {\Large gridSVG};
+\draw [->, thick] (grdev) -- (svg);
+\draw [->, thick] (grdev) -- (pdf);
+\draw [->, thick] (gr) -- (grdev);
+\draw [->, thick] (grid) -- (grdev);
+\draw [->, thick] (grid) -- (gridsvg);
+\end{tikzpicture}
+\caption{Instead of using \textsf{grDevices} to create an SVG image for a \grid{} plot, \gridSVG{} creates the image directly.}
+\label{fig:grid-system}
+\end{figure}
+
+The approach \gridSVG{} takes when creating an SVG image is to first capture all of the graphics objects and viewports present in a \grid{} plot.
 Extra information can then be added to specific graphics objects if interaction or animation is to occur on them.
 Once the additional annotation of graphics objects has taken place, \gridSVG{} attempts to write out the information it has available to it.
 
-Writing to SVG requires that for each \grid{} graphics object, there is mapping to SVG elements that adequately represent the \grid{} graphics object.
+Additional information is added to graphics objects through the provision of functions that modify existing graphics objects.
+An example of one of these functions is \texttt{grid.garnish()} which ``garnishes" a graphics object with extra attributes.
+\texttt{grid.garnish()} takes as its first parameter the name of the graphics object that is being modified.
+Any additional named parameters are additional SVG attributes that the graphics object will have.
+This is how we can add attributes such as \texttt{onmouseover} to implement interactivity.
+
+\begin{listing}[H]
+\begin{rconsolecode}
+> library(gridSVG)
+> grid.rect(gp = gpar(fill = "black"))
+> grid.ls()
+GRID.rect.1
+> grid.garnish("GRID.rect.1", onmouseover = "setYellow(evt)")
+\end{rconsolecode}
+\caption{Adding an \texttt{onmouseover} attribute to a graphics object.}
+\label{lst:gridsvg-garnish-example}
+\end{listing}
+
+\autoref{lst:gridsvg-garnish-example} shows how we would typically use \texttt{grid.garnish()}.
+First a black rectangle is being drawn, and we find out that it is named \texttt{GRID.rect.1}.
+We then use \texttt{grid.garnish()} to add an \texttt{onmouseover} attribute to \texttt{GRID.rect.1}.
+This attribute holds the value of \texttt{setYellow(evt)}.
+Now \gridSVG{} is aware that there is an additional attribute associated with \texttt{GRID.rect.1}.
+
+After modifying graphics objects, \gridSVG{}'s next task is to translate the graphics objects to SVG.
+Writing to SVG requires that for each \grid{} graphics object, there is a mapping to SVG elements that adequately represent the \grid{} graphics object.
 For many graphics objects, this task is simple as there is a direct mapping between a \grid{} graphics object and an SVG element.
 An example of this is a \texttt{rectGrob} (produced by \texttt{grid.rect()}) mapping to a \texttt{<rect />}.
 However, for other elements this is not so straightforward because the mapping is not obvious.
 This will be further explained in Section 4.
 
-The extra information that is annotated to \grid{} graphics objects also requires translating to SVG.
-This can mean adding attributes on the SVG element that the graphics object maps to, this is the case when ``garnishing" a graphics object with extra attributes.
+When writing to SVG, \gridSVG{} can annotate SVG elements with the same names as the \grid{} graphics objects on the display list.
+This means that if we have a graphics object named \texttt{GRID.rect.1}, we can identify the SVG element(s) that the object translates to.
+By retaining object names, we can use JavaScript to target these names and interact with the objects the names are associated with.
+
+The extra attributes that are annotated to \grid{} graphics objects also require translating to SVG.
+This can mean adding attributes on the SVG element that the graphics object maps to.
+This is the case when ``garnishing" a graphics object with extra attributes.
 However, when animating graphics objects, additional SVG elements must be used to store animation information.
+

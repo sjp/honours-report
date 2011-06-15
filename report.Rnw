@@ -4,6 +4,9 @@
 % Allowing dots in graphical filenames
 \usepackage{grffile}
 
+% Nice tables
+\usepackage{booktabs}
+
 % While microtype produces nice results,
 % change font size by no more than 1%.
 \usepackage[stretch = 10]{microtype}
@@ -18,6 +21,7 @@
 \usetikzlibrary{arrows, positioning, fit, shapes}
 
 % Ensuring we get hyperlinks and that natbib plays nicely with it.
+\usepackage{float}
 \usepackage{hyperref}
 \usepackage{hypernat}
 
@@ -42,6 +46,10 @@
 \newminted{xml}{frame = single, xleftmargin = 0.05\textwidth, xrightmargin = 0.05\textwidth}
 \newminted{js}{frame = single, xleftmargin = 0.05\textwidth, xrightmargin = 0.05\textwidth}
 \providecommand*{\listingautorefname}{Listing} % Fixes autoref{}
+
+% Will need subfloats for before & after comparisons
+\usepackage{caption}
+\usepackage[list = true]{subcaption}
 
 % Saving myself from repeatedly having to format text.
 \newcommand{\grid}{\textsf{grid}}
