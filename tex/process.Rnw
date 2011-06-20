@@ -93,7 +93,7 @@ grid.circle(x = c(0.2, 0.7), y = c(0.2, 0.7),
 dev.off()
 @
 
-\fbox{\includegraphics[width=0.4\textwidth]{./grid-circle-vector-example.pdf}}
+\fbox{\includegraphics[width=0.3\textwidth]{./grid-circle-vector-example.pdf}}
 \caption{Multiple circles created using one \grid{} function call, produced by \autoref{lst:grid-circle-vector-example}.}
 \label{fig:grid-circle-vector-example}
 \end{figure}
@@ -129,7 +129,7 @@ This means we can group the multiple elements produced by a graphics object unde
 The group element can then be assigned the name of the \grid{} graphics object and is guaranteed to be unique.
 
 We can demonstrate this naming scheme by showing the SVG that \texttt{gridSVG} produces from \autoref{lst:grid-circle-vector-example}.
-The relevant subset of the resulting SVG image is shown \autoref{lst:gridsvg-circle-vector-example}.
+The relevant subset of the resulting SVG image is shown in \autoref{lst:gridsvg-circle-vector-example}.
 
 \begin{listing}[H]
 \begin{xmlcode}
@@ -146,7 +146,7 @@ To ensure consistency in the SVG output that \gridSVG{} produces, every graphics
 This is the case even when multiple elements are not produced from a single \grid{} graphics object.
 If we observe \autoref{lst:gridsvg-circle-vector-example}, the output would only be slightly different if \texttt{GRID.circle.1} only produced one circle.
 The effect of this would be that the line containing the \texttt{<circle>} named \texttt{GRID.circle.1.2} will be absent.
-That modified example does not require multiple elements to be created because only a single circle is created, but grouping does ensure consistent output.
+The modified example does not require multiple elements to be created because only a single circle is created, but grouping it regardless ensures consistent output.
 
 \subsection{Opacity}
 
@@ -271,7 +271,7 @@ This translation is shown in \autoref{tbl:opacity-mapping}.
 \centering
 
 \begin{tabular}{l l}
-\grid{} Graphical Parameter & SVG Styling Parameter \\
+\grid{} Graphical Parameters & SVG Styling Parameters \\
 \midrule
 \texttt{col} & \texttt{stroke} \& \texttt{stroke-opacity} \\
 \texttt{fill} & \texttt{fill} \& \texttt{fill-opacity} \\
@@ -287,28 +287,540 @@ This is explains why \texttt{col} (and similarly \texttt{fill}) needs to be tran
 
 \subsection{X-splines}
 
-%    - Decision over paths or lines
+The \grid{} graphics system has the capacity to draw a curved line using a set of control points.
+These lines are known as x-splines.
+\gridSVG{} was not able to draw x-splines at all prior to extending the functionality this package. 
+
+A key feature of x-splines is the ability to define whether an x-spline is open or closed.
+This has a significant effect on what will be drawn by \grid{}.
+An open x-spline will draw the line relative to any control points, but no fill colour will be applied.
+A closed x-spline behaves similarly to an open x-spline, however, a curve is also drawn between the last control point and the first control point.
+This closes the spline and allows for a fill colour to be set.
+A comparison of the two types of splines is shown in \autoref{fig:grid-xspline-example}.
+
+\begin{figure}[H]
+\centering
+
+<<echo = FALSE, results = hide, fig = FALSE>>=
+pdf("grid-xspline-example.pdf")
+library(grid)
+grid.newpage()
+
+# Example lifted from ?grid.xspline
+x <- c(0.25, 0.25, 0.75, 0.75)
+y <- c(0.25, 0.75, 0.75, 0.25)
+     
+xsplineTest <- function(s, i, j, open) {
+  pushViewport(viewport(layout.pos.col=j, layout.pos.row=i))
+  grid.points(x, y, default.units="npc", pch=16, size=unit(2, "mm"))
+  grid.xspline(x, y, shape=s, open=open, gp=gpar(fill="grey"))
+  grid.text(s, gp=gpar(col="grey"),
+            x=unit(x, "npc") + unit(c(-1, -1, 1, 1), "mm"),
+            y=unit(y, "npc") + unit(c(-1, 1, 1, -1), "mm"),
+            hjust=c(1, 1, 0, 0),
+            vjust=c(1, 0, 0, 1))
+  popViewport()
+}
+     
+pushViewport(viewport(width=.5, x=0, just="left",
+                      layout=grid.layout(3, 3, respect=TRUE)))
+pushViewport(viewport(layout.pos.row=1))
+grid.text("Open Splines", y=1, just="bottom")
+popViewport()
+xsplineTest(c(0, -1, -1, 0), 1, 1, TRUE)
+xsplineTest(c(0, -1,  0, 0), 1, 2, TRUE)
+xsplineTest(c(0, -1,  1, 0), 1, 3, TRUE)
+xsplineTest(c(0,  0, -1, 0), 2, 1, TRUE)
+xsplineTest(c(0,  0,  0, 0), 2, 2, TRUE)
+xsplineTest(c(0,  0,  1, 0), 2, 3, TRUE)
+xsplineTest(c(0,  1, -1, 0), 3, 1, TRUE)
+xsplineTest(c(0,  1,  0, 0), 3, 2, TRUE)
+xsplineTest(c(0,  1,  1, 0), 3, 3, TRUE)
+popViewport()
+pushViewport(viewport(width=.5, x=1, just="right",
+                      layout=grid.layout(3, 3, respect=TRUE)))
+pushViewport(viewport(layout.pos.row=1))
+grid.text("Closed Splines", y=1, just="bottom")
+popViewport()
+xsplineTest(c(-1, -1, -1, -1), 1, 1, FALSE)
+xsplineTest(c(-1, -1,  0, -1), 1, 2, FALSE)
+xsplineTest(c(-1, -1,  1, -1), 1, 3, FALSE)
+xsplineTest(c( 0,  0, -1,  0), 2, 1, FALSE)
+xsplineTest(c( 0,  0,  0,  0), 2, 2, FALSE)
+xsplineTest(c( 0,  0,  1,  0), 2, 3, FALSE)
+xsplineTest(c( 1,  1, -1,  1), 3, 1, FALSE)
+xsplineTest(c( 1,  1,  0,  1), 3, 2, FALSE)
+xsplineTest(c( 1,  1,  1,  1), 3, 3, FALSE)
+popViewport()
+
+dev.off()
+@
+
+\fbox{\includegraphics[width=0.4\textwidth]{./grid-xspline-example.pdf}}
+\caption{Multiple x-splines created using \texttt{grid.xspline()}. X-splines on the left and right are almost equivalent, differing only by being open or closed.}
+\label{fig:grid-xspline-example}
+\end{figure}
+
+We are presented with a problem when translating the behaviour of x-splines to equivalent SVG code.
+While SVG paths can draw curved paths, the types of curves that SVG supports are elliptical arcs and variations of B\'{e}zier curves.
+X-splines drawn in \grid{} can support more complex curves, as a result it is not possible to represent all \grid{} x-splines as SVG paths.
+The solution to this is to use a function provided by \grid{}, \texttt{xsplinePoints()}.
+This returns a set of points that can be used to draw an approximation of an x-spline as a line.
+
+If the positions that an x-spline passes through is known, emulating the behaviour of the open and closed x-splines is the next logical step.
+The decision was made to re-use existing \gridSVG{} functionality by implementing an open x-spline as a \grid{} line and a closed x-spline as a \grid{} path.
+This means that when translating an x-spline graphics object, we inspect the object to see whether it is an open or closed x-spline.
+
+If the x-spline is open, we create a new graphics object that represents a line.
+Line graphics objects are used because they do not draw a fill colour, and as a result they behave similarly to an evaluated open x-spline.
+Relevant information from the x-spline graphics object is translated or copied to create the line graphics object.
+An example of the translation that occurs is using the \texttt{xsplinePoints()} function to provide the line coordinates.
+Most other information is copied, such as the name of the graphics object and the graphical parameters that the x-spline has.
+
+\begin{figure}[H]
+\centering
+
+<<echo = FALSE, results = hide, fig = FALSE>>=
+pdf("grid-open-xspline.pdf")
+library(grid)
+grid.newpage()
+grid.xspline(c(0.25, 0.25, 0.75, 0.75),
+             c(0.25, 0.75, 0.75, 0.25),
+             shape = 1, open = TRUE,
+             name = "openSpline")
+dev.off()
+@
+
+\begin{subfigure}[c]{\textwidth}
+\centering
+\begin{rconsolecode}
+> grid.xspline(c(0.25, 0.25, 0.75, 0.75),
++              c(0.25, 0.75, 0.75, 0.25),
++              shape = 1, open = TRUE,
++              name = "openSpline")
+\end{rconsolecode}
+\caption{Creating an open x-spline in \grid{}.}
+\label{lst:grid-open-xspline-1}
+\end{subfigure}
+\begin{subfigure}[c]{0.3\textwidth}
+\centering
+\fbox{\includegraphics[width = \textwidth]{./grid-open-xspline.pdf}}
+\caption{The x-spline in (a) when drawn.}
+\label{subfig:grid-open-xspline}
+\end{subfigure}
+\hspace{0.05\textwidth}
+\begin{subfigure}[c]{0.6\textwidth}
+\centering
+\begin{xmlcode}
+<g id="openSpline">
+  <polyline id="openSpline.1"
+            points="..." />
+</g>
+\end{xmlcode}
+\caption{The SVG code that the open x-spline translates to.}
+\label{lst:grid-open-xspline-2}
+\end{subfigure}
+
+\caption{An open x-spline being processed by \gridSVG{}.}
+\label{fig:grid-open-xspline}
+\end{figure}
+
+\autoref{fig:grid-open-xspline} demonstrates the steps that \gridSVG{} takes to translate an open x-spline to SVG code.
+First, an x-spline is created with four control points.
+The x-spline is given a name of \texttt{openSpline}, but more importantly the \texttt{open} parameter is set to \texttt{TRUE}.
+This ensures an open x-spline is drawn and appears as the image shown in \autoref{subfig:grid-open-xspline}.
+The SVG code that was produced uses a \texttt{<polyline />} element because that is what a \grid{} line translates to.
+In creating the \texttt{<polyline />} element, the \texttt{points} attribute takes values returned from \texttt{xsplinePoints()}.
+
+When an x-spline is closed, a path graphics object is created instead of a line graphics object.
+The path graphics object is created in the same manner as the line graphics object is for open splines.
+The reason for using \grid{} paths is that paths in \grid{} are closed.
+A consequence of this is that a line will always be drawn between the last control point and the first control point.
+If a path is closed, as is the case with \grid{}, then it can be filled with a colour.
+
+\begin{figure}[H]
+\centering
+
+<<echo = FALSE, results = hide, fig = FALSE>>=
+pdf("grid-closed-xspline.pdf")
+library(grid)
+grid.newpage()
+grid.xspline(c(0.25, 0.25, 0.75, 0.75),
+             c(0.25, 0.75, 0.75, 0.25),
+             shape = 1, open = FALSE,
+             name = "closedSpline",
+             gp = gpar(fill = "grey"))
+dev.off()
+@
+
+\begin{subfigure}[c]{\textwidth}
+\centering
+\begin{rconsolecode}
+> grid.xspline(c(0.25, 0.25, 0.75, 0.75),
++              c(0.25, 0.75, 0.75, 0.25),
++              shape = 1, open = FALSE,
++              name = "closedSpline",
++              gp = gpar(fill = "grey"))
+\end{rconsolecode}
+\caption{Creating a closed x-spline in \grid{}.}
+\label{lst:grid-closed-xspline-1}
+\end{subfigure}
+\begin{subfigure}[c]{0.3\textwidth}
+\centering
+\fbox{\includegraphics[width = \textwidth]{./grid-closed-xspline.pdf}}
+\caption{The x-spline in (a) when drawn.}
+\label{subfig:grid-closed-xspline}
+\end{subfigure}
+\hspace{0.05\textwidth}
+\begin{subfigure}[c]{0.6\textwidth}
+\centering
+\begin{xmlcode}
+<g id="closedSpline"  >
+  <path id="closedSpline.1"
+        d="..." />
+</g>
+\end{xmlcode}
+\caption{The SVG code that the closed x-spline translates to.}
+\label{lst:grid-closed-xspline-2}
+\end{subfigure}
+
+\caption{A closed x-spline being processed by \gridSVG{}.}
+\label{fig:grid-closed-xspline}
+\end{figure}
+
+\autoref{fig:grid-closed-xspline} provides a similar example to \autoref{fig:grid-open-xspline}.
+The key difference here is the change in the \texttt{open} parameter.
+It is now \texttt{FALSE}.
+This ensures a closed x-spline is drawn and to further illustrate this, the x-spline is filled with grey.
+As the x-spline is closed and that a \grid{} path is used to represent it, the SVG code uses a \texttt{<path />} element.
+The \texttt{d} attribute of the \texttt{<path />} element uses output from \texttt{xsplinePoints()} to define the path. 
+Comparing figures \ref{fig:grid-open-xspline} and \ref{fig:grid-closed-xspline}, we can see that decision to use different graphics objects has only a minor effect to the resulting SVG code.
+More importantly, the output that is produced by x-splines is visually accurate.
 
 \subsection{Markers}
 
-%    - Markers
+Within the \grid{} graphics system, some graphics objects have the option of being drawn with an arrow.
+All graphics objects that support arrows are some variation of a line.
+With an arrow applied a line, it could be used to illustrate a direction or perhaps show an outlier in a plot.
+
+An arrow in \grid{} can appear at the beginning or end of a line or both.
+There are three ways in which the appearance of an arrow can be changed.
+The first of these is the angle of the arrow head, this controls how wide an arrow head is.
+By using larger angles, the arrow head is going to appear wider.
+The length of an arrow head is defined by the distance from the tip of the arrow to the base.
+Lastly, an arrow can be either open or closed which indicates whether the arrow head is a closed triangle or not.
+
+When translating arrows, there is a clear mapping to an SVG element, the \texttt{<marker>} element.
+A useful attribute of the \texttt{<marker>} element is \texttt{orient}, which takes a value of \texttt{auto} by default.
+This means \gridSVG{} can offload the work of orienting the marker to an SVG renderer.
+The task for \gridSVG{} is therefore to define how the marker is to appear and linking a \texttt{<marker>} element to the corresponding SVG element.
+
+In order to define how the marker appears we use an SVG \texttt{<path />} element.
+Therefore, when we refer to a marker, it is actually a path that is drawn relative to a marker's position and orientation.
+
+SVG provides a slightly different definition for a marker than \grid{}'s arrows.
+A marker is placed at the end of a line, while in \grid{} an arrow is positioned within a line.
+This means that a marker's position will need to be adjusted to match \grid{}'s behaviour.
+
+\begin{figure}[H]
+\centering
+
+<<echo = FALSE, results = hide, fig = FALSE>>=
+pdf("svg-marker-definition-1.pdf")
+library(grid)
+grid.newpage()
+grid.rect(gp = gpar(lty = "dashed", lwd = 5))
+grid.lines(c(0, 1, 0), 2:0/2, gp = gpar(lwd = 5))
+dev.off()
+
+pdf("svg-marker-definition-3.pdf")
+library(grid)
+grid.newpage()
+grid.lines(arrow = arrow(length = unit(0.25, "npc")))
+dev.off()
+@
+
+\begin{subfigure}[t]{0.25\textwidth}
+\centering
+\includegraphics[width = \textwidth]{./svg-marker-definition-1.pdf}
+\caption{How a marker is defined, prior to orientation with a line. Dashes indicate marker boundaries.}
+\label{fig:svg-marker-definition-1}
+\end{subfigure}
+\hspace{0.08\textwidth}
+\begin{subfigure}[t]{0.25\textwidth}
+\centering
+\includegraphics[width = \textwidth]{./images/svg-marker-definition-2.pdf}
+\caption{Applying the marker to a line.}
+\label{fig:svg-marker-definition-2}
+\end{subfigure}
+\hspace{0.08\textwidth}
+\begin{subfigure}[t]{0.25\textwidth}
+\centering
+\includegraphics[width = \textwidth]{./svg-marker-definition-3.pdf}
+\caption{A \grid{} line with an arrow.}
+\label{fig:svg-marker-definition-2}
+\end{subfigure}
+
+\caption{Comparing the definition and application of the SVG \texttt{<marker>} element to \grid{}'s arrows.}
+\label{fig:svg-marker-definition}
+\end{figure}
+
+We can see in \autoref{fig:svg-marker-definition} that although the SVG marker is oriented correctly, it is not positioned at the right place.
+In order to position the marker correctly, there are two attributes we can use.
+These attributes are \texttt{refX} and \texttt{refY}.
+The effect that these attributes have is they modify the origin of the coordinates used in a marker.
+For example if we set \texttt{refX} to be $-3$, then the $x$ values of the points in our marker will be be subtracted by 3.
+The formula we use to reposition markers depends on whether the marker is placed at the end of a line or the beginning of a line.
+The formulae used are shown in \autoref{tbl:svg-marker-formulae}.
+
+\begin{table}[H]
+\centering
+
+\begin{tabular}{l c}
+Line end & \texttt{refX} and \texttt{refY} Formula \\
+\midrule
+Start & $\left(-\mathrm{width}, \frac{\displaystyle -\mathrm{height}}{\displaystyle 2} \right)$ \\ 
+End & $\left(\mathrm{width}, \frac{\displaystyle \mathrm{height}}{\displaystyle 2}\right)$ \\
+\end{tabular}
+\caption{Formulae used to reposition a marker. Width and height refer to the dimensions of the marker.}
+\label{tbl:svg-marker-formulae}
+\end{table}
+
+An issue when repositioning is that markers by default do not draw outside of their defined dimensions.
+This means that when we use \texttt{refX} and \texttt{refY} to change where the marker path is drawn, at least some of the path will be drawn outside of the defined dimensions.
+This leaves us with an arrow that is partially obscured.
+To correct this, we change an attribute on the \texttt{<marker>} element.
+This attribute is \texttt{overflow}, which is \texttt{hidden} by default and we will change this to \texttt{visible}.
+The effect is that now a marker can be repositioned and will also be completely visible.
+
+Now that we know how to draw markers that appear the same as \grid{} arrows, implementing this functionality is the next logical step.
+The way \gridSVG{} approaches this task is to first identify if an arrow is present on a graphics object.
+If there is an arrow present, we note the name of the graphics object that has the arrow.
+This allows us to give the arrow a reasonable name so that a graphics object can refer to the resulting marker.
+
+To define how the SVG marker appears we use the angle and length properties of \grid{} arrows.
+By applying basic trigonometry these properties allow us to calculate the marker's height and width.
+We can create a \texttt{<path />} element that reproduces the arrow using this information.
+This path would appear similar to \autoref{fig:svg-marker-definition-1}.
+
+As an arrow can be applied to either end of a line, the markers that we draw in SVG should be able to handle both line ends.
+This requires producing a \texttt{<marker>} element for each line end that arrows appear on.
+The decision was made to always create two \texttt{marker} elements so that it is possible in JavaScript to enable or disable arrows at either end.
+
+Once again the issue of a naming scheme is raised as we cannot create two markers with the same name.
+The naming scheme that is applied to markers is we first take the name of graphics object that contains arrows and suffix it with one of \texttt{markerStart} or \texttt{markerEnd}.
+These refer to arrows positioned at the start of a line and end of a line respectively.
+
+\begin{figure}[H]
+\centering
+
+<<echo = FALSE, results = hide, fig = FALSE>>=
+library(gridSVG)
+grid.newpage()
+grid.rect()
+grid.lines(arrow = arrow(ends = "both",
+                         length = unit(0.25, "npc")),
+           name = "example-line")
+gridToSVG("marker-naming.svg")
+@
+
+\begin{subfigure}[c]{0.6\textwidth}
+\centering
+\begin{rconsolecode}
+> grid.lines(arrow = 
+               arrow(ends = "both"),
+             name = "example-line")
+\end{rconsolecode}
+\caption{A \grid{} line with arrows at both ends.}
+\label{lst:marker-naming-1}
+\end{subfigure}
+\begin{subfigure}[c]{0.3\textwidth}
+\centering
+\includegraphics[width = \textwidth]{./marker-naming.svg.pdf}
+\caption{A line with arrows at both ends, produced by \autoref{lst:marker-naming-1}.}
+\label{subfig:marker-naming}
+\end{subfigure}
+\begin{subfigure}[c]{0.8\textwidth}
+\centering
+\begin{xmlcode}
+<defs>
+  <marker id="example-line.1.markerStart" ... >
+    <path d="..." />
+  </marker>
+  <marker id="example-line.1.markerEnd" ... >
+    <path d="..." />
+  </marker>
+</defs>
+\end{xmlcode}
+\caption{The SVG code that produces arrows.}
+\label{lst:marker-naming-2}
+\end{subfigure}
+
+\caption{Demonstrating the naming scheme applied to arrows.}
+\label{fig:marker-naming}
+\end{figure}
+
+\autoref{fig:marker-naming} shows how a \grid{} line named \texttt{example-line} is created with arrows at both ends of the line.
+When this is written out to SVG, the \texttt{<marker>} elements created have the name \texttt{example-line}, but are suffixed with \texttt{markerStart} or \texttt{markerEnd}.
+We can see that paths are drawn within each of the \texttt{marker} elements.
+In our implementation, the paths are in fact identical to each other.
+An SVG element that has yet to be mentioned is the \texttt{<defs>} element.
+This element allows us to define elements that are able to be used by other elements.
+This allows us to refer to markers from our line elements.
+
+Given that a reasonable method of creating arrows and referring to them has been established, they must be applied to lines.
+The way in which SVG allows this to occur is by adding SVG attributes to our line elements.
+The two attributes we are concerned with are \texttt{marker-start} and \texttt{marker-end}.
+These attributes correspond with the arrow that is positioned at the start of the line and the end of the line respectively.
+If an arrow is only defined as existing at the end of a line, then the \texttt{marker-start} attribute is not included.
+An example of how these attributes are used is included in \autoref{lst:marker-attribute-example}
+
+\begin{listing}[H]
+\begin{xmlcode}
+<g id="example-line">
+  <polyline id="example-line.1"
+            marker-start="url(#example-line.1.markerStart)"
+            marker-end="url(#example-line.1.markerEnd)"
+            ... />
+</g>
+\end{xmlcode}
+\caption{SVG code that applies markers to the line produced by \autoref{lst:marker-naming-1}.}
+\label{lst:marker-attribute-example}
+\end{listing}
+
+In \autoref{lst:marker-attribute-example} we can see the use of the \texttt{url()} function in the \texttt{marker-*} attributes.
+The purpose of this function is to be able to refer to another element within the SVG image.
+In this case we are referring to the \texttt{<marker>} elements that we created earlier in autoref{fig:marker-naming}.
+Knowing that a consistent naming scheme was in use allowed us to know in advance what the names of the \texttt{<marker>} elements would be.
+Note that the \texttt{\#} within the \texttt{url()} function simply means to search for an element with the given \texttt{id}.
+
+We have been able to extend \gridSVG{} to be able to include arrows on line graphics objects.
+By applying \texttt{<marker>} elements and referring to these elements through SVG attributes, the result appears equivalent to what \grid{} draws.
 
 \subsection{Multi-line text}
 
-%    - Text justification and grobHeight
+When drawing text in \grid{} through the \texttt{grid.text()} function, there is the ability to split text over multiple lines.
+This is achieved by including a newline character (\verb|\n|) within a text label.
+Every time a newline character is encountered, a line break occurs.
+\gridSVG{} lacked the ability to handle line breaks when manipulating \grid{} text objects.
+The effect that \verb|\n| had was it introduced a newline in the SVG code, splitting the text over multiple lines in SVG.
+However, whitespace is not significant in SVG code and as a result the SVG text appeared as if it was all one line.
+This incorrect behaviour is demonstrated in \autoref{fig:gridsvg-newline-handling}.
 
-%    - problems with fonts?
+\begin{figure}[H]
+\centering
+
+<<echo = FALSE, results = hide, fig = FALSE>>=
+library(grid)
+pdf("grid-newline-correct.pdf")
+grid.newpage()
+grid.text("Hello,\nworld!", gp = gpar(fontsize = 72))
+dev.off()
+detach("package:gridSVG")
+
+library(oldgridSVG)
+grid.newpage()
+grid.text("Hello,\nworld!", gp = gpar(fontsize = 72))
+gridToSVG("gridsvg-newline-incorrect.svg")
+detach("package:oldgridSVG")
+library(gridSVG)
+@
+
+\begin{subfigure}[c]{0.45\textwidth}
+\centering
+\begin{rconsolecode}
+> grid.text("Hello,\nworld!")
+\end{rconsolecode}
+\caption{A \grid{} command that produces text with two lines.}
+\label{lst:gridsvg-newline-example}
+\end{subfigure}
+\begin{subfigure}[c]{0.5\textwidth}
+\centering
+\fbox{\includegraphics[width = 0.4\textwidth]{./grid-newline-correct.pdf}}
+\caption{The expected image produced by \autoref{lst:gridsvg-newline-example}.}
+\label{subfig:grid-newline-example}
+\end{subfigure}
+\begin{subfigure}[c]{0.45\textwidth}
+\centering
+\begin{xmlcode}
+<text ...>
+  <tspan>Hello,
+  world!</tspan>
+</text>
+\end{xmlcode}
+\caption{The effect that the newline character had on the SVG code.}
+\label{lst:gridsvg-newline-output}
+\end{subfigure}
+\begin{subfigure}[c]{0.5\textwidth}
+\centering
+\fbox{\includegraphics[width = 0.4\textwidth]{./gridsvg-newline-incorrect.svg.pdf}}
+\caption{The output that was produced by \gridSVG{} instead of \autoref{subfig:grid-newline-example}.}
+\label{subfig:gridsvg-newline-example}
+\end{subfigure}
+
+\caption{Demonstrating the incorrect newline behaviour previously present in \gridSVG{}.}
+\label{fig:gridsvg-newline-handling}
+\end{figure}
+
+The reason for the incorrect behaviour demonstrated in \autoref{fig:gridsvg-newline-handling} is that \gridSVG{} treated every character in a text label as literal text.
+This means that \gridSVG{} assumed that \verb|\n| simply meant the characters \verb|\n| and not a newline character.
+\gridSVG{} therefore had to remove this assumption and recognise that some characters have a special meaning associated with them.
+
+To implement multi-line text in SVG, the SVG specification offers two solutions.
+One solution is to use multiple \texttt{<text>} elements to hold the text, one element per line of text.
+The other solution is to use one \texttt{<text>} element but use \texttt{<tspan>} elements to hold each line of text.
+Both of these methods require the position of each line to be calculated individually, however the latter option is going to be used.
+The reason is because by having a single \texttt{<text>} element, the SVG documents that \gridSVG{} creates will be able to afford text selection over multiple lines.
+The first option, using multiple \texttt{<text>} elements, cannot provide this feature.
+Shown below in \autoref{fig:svg-text-options} is a comparison of the expected output from the two alternatives.
+
+\begin{figure}[H]
+\centering
+
+\begin{subfigure}[c]{0.45\textwidth}
+\centering
+\begin{rconsolecode}
+<text>Hello,</text>
+<text>world!</text>
+\end{rconsolecode}
+\caption{Multi-line text solution using multiple \texttt{<text>} elements.}
+\label{lst:svg-text-options-1}
+\end{subfigure}
+\begin{subfigure}[c]{0.45\textwidth}
+\centering
+\begin{xmlcode}
+<text>
+  <tspan>Hello,</tspan>
+  <tspan>world!</tspan>
+</text>
+\end{xmlcode}
+\caption{Using multiple \texttt{<tspan>} elements to achieve multi-line text.}
+\label{lst:svg-text-options-2}
+\end{subfigure}
+
+\caption{Comparing the expected SVG code produced from using two different multi-line text solutions.}
+\label{fig:svg-text-options}
+\end{figure}
+
+It is now known which elements \gridSVG{} is going to use and how they are going to be applied.
+The general approach is that each time a newline character is encountered, create a new \texttt{<tspan>} element.
+This method ensures that each line holds a line of text.
+The key problem remaining is that each line now needs to be positioned correctly.
+
+    - Text justification and grobHeight
+
+    - problems with fonts?
 
 \subsection{Fonts}
 
-%    - Fonts (explain [get/set]SVGFonts)
+    - Fonts (explain [get/set]SVGFonts)
 
 \subsection{gTrees, viewports, frames and cellGrobs}
 
-%    - gTrees \& viewports
+    - gTrees \& viewports
 
-%    - frames (and cells)
+    - frames (and cells)
 
 \subsection{Viewport clipping}
 
-%    - Clipping
+    - Clipping
