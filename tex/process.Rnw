@@ -363,9 +363,10 @@ dev.off()
 
 We are presented with a problem when translating the behaviour of x-splines to equivalent SVG code.
 While SVG paths can draw curved paths, the types of curves that SVG supports are elliptical arcs and variations of B\'{e}zier curves.
-X-splines drawn in \grid{} can support more complex curves, as a result it is not possible to represent all \grid{} x-splines as SVG paths.
+X-splines drawn in \grid{} can support more complex curves.
+As a result it is not possible to represent all \grid{} x-splines as SVG paths.
 The solution to this is to use a function provided by \grid{}, \texttt{xsplinePoints()}.
-This returns a set of points that can be used to draw an approximation of an x-spline as a line.
+This function returns a set of points that can be used to draw an approximation of an x-spline as a line.
 
 If the positions that an x-spline passes through is known, emulating the behaviour of the open and closed x-splines is the next logical step.
 The decision was made to re-use existing \gridSVG{} functionality by implementing an open x-spline as a \grid{} line and a closed x-spline as a \grid{} path.
@@ -569,7 +570,7 @@ We can see in \autoref{fig:svg-marker-definition} that although the SVG marker i
 In order to position the marker correctly, there are two attributes we can use.
 These attributes are \texttt{refX} and \texttt{refY}.
 The effect that these attributes have is they modify the origin of the coordinates used in a marker.
-For example if we set \texttt{refX} to be $-3$, then the $x$ values of the points in our marker will be be subtracted by 3.
+For example if we set \texttt{refX} to be $-3$, then the $x$ values of the points in our marker will be increased by 3.
 The formula we use to reposition markers depends on whether the marker is placed at the end of a line or the beginning of a line.
 The formulae used are shown in \autoref{tbl:svg-marker-formulae}.
 
@@ -690,7 +691,7 @@ An example of how these attributes are used is included in \autoref{lst:marker-a
 
 In \autoref{lst:marker-attribute-example} we can see the use of the \texttt{url()} function in the \texttt{marker-*} attributes.
 The purpose of this function is to be able to refer to another element within the SVG image.
-In this case we are referring to the \texttt{<marker>} elements that we created earlier in autoref{fig:marker-naming}.
+In this case we are referring to the \texttt{<marker>} elements that we created earlier in \autoref{fig:marker-naming}.
 Knowing that a consistent naming scheme was in use allowed us to know in advance what the names of the \texttt{<marker>} elements would be.
 Note that the \texttt{\#} within the \texttt{url()} function simply means to search for an element with the given \texttt{id}.
 
@@ -703,7 +704,7 @@ When drawing text in \grid{} through the \texttt{grid.text()} function, there is
 This is achieved by including a newline character (\verb|\n|) within a text label.
 Every time a newline character is encountered, a line break occurs.
 \gridSVG{} lacked the ability to handle line breaks when manipulating \grid{} text objects.
-The effect that \verb|\n| had was it introduced a newline in the SVG code, splitting the text over multiple lines in SVG.
+The effect of \verb|\n| was it introduced a newline in the SVG code, splitting the text over multiple lines in SVG.
 However, whitespace is not significant in SVG code and as a result the SVG text appeared as if it was all one line.
 This incorrect behaviour is demonstrated in \autoref{fig:gridsvg-newline-handling}.
 
@@ -726,7 +727,7 @@ detach("package:oldgridSVG")
 library(gridSVG)
 @
 
-\begin{subfigure}[c]{0.45\textwidth}
+\begin{subfigure}[c]{0.5\textwidth}
 \centering
 \begin{rconsolecode}
 > grid.text("Hello,\nworld!")
@@ -734,13 +735,13 @@ library(gridSVG)
 \caption{A \grid{} command that produces text with two lines.}
 \label{lst:gridsvg-newline-example}
 \end{subfigure}
-\begin{subfigure}[c]{0.5\textwidth}
+\begin{subfigure}[c]{0.45\textwidth}
 \centering
 \fbox{\includegraphics[width = 0.4\textwidth]{./grid-newline-correct.pdf}}
 \caption{The expected image produced by \autoref{lst:gridsvg-newline-example}.}
 \label{subfig:grid-newline-example}
 \end{subfigure}
-\begin{subfigure}[c]{0.45\textwidth}
+\begin{subfigure}[c]{0.5\textwidth}
 \centering
 \begin{xmlcode}
 <text ...>
@@ -751,7 +752,7 @@ library(gridSVG)
 \caption{The effect that the newline character had on the SVG code.}
 \label{lst:gridsvg-newline-output}
 \end{subfigure}
-\begin{subfigure}[c]{0.5\textwidth}
+\begin{subfigure}[c]{0.45\textwidth}
 \centering
 \fbox{\includegraphics[width = 0.4\textwidth]{./gridsvg-newline-incorrect.svg.pdf}}
 \caption{The output that was produced by \gridSVG{} instead of \autoref{subfig:grid-newline-example}.}
@@ -768,9 +769,9 @@ This means that \gridSVG{} assumed that \verb|\n| simply meant the characters \v
 
 To implement multi-line text in SVG, the SVG specification offers two solutions.
 One solution is to use multiple \texttt{<text>} elements to hold the text, one element per line of text.
-The other solution is to use one \texttt{<text>} element but use \texttt{<tspan>} elements to hold each line of text.
-Both of these methods require the position of each line to be calculated individually, however the latter option is going to be used.
-The reason is because by having a single \texttt{<text>} element, the SVG documents that \gridSVG{} creates will be able to afford text selection over multiple lines.
+The other solution is to use one \texttt{<text>} element but use a \texttt{<tspan>} element for each line of text.
+Both of these methods require the position of each line to be calculated, however the latter option is going to be used.
+The reason is by having a single \texttt{<text>} element, the SVG images that \gridSVG{} creates will be able to support text selection over multiple lines.
 The first option, using multiple \texttt{<text>} elements, cannot provide this feature.
 Shown below in \autoref{fig:svg-text-options} is a comparison of the expected output from the two alternatives.
 
@@ -805,22 +806,1002 @@ Shown below in \autoref{fig:svg-text-options} is a comparison of the expected ou
 It is now known which elements \gridSVG{} is going to use and how they are going to be applied.
 The general approach is that each time a newline character is encountered, create a new \texttt{<tspan>} element.
 This method ensures that each line holds a line of text.
-The key problem remaining is that each line now needs to be positioned correctly.
+The key step remaining is that each line now needs to be positioned correctly.
 
-    - Text justification and grobHeight
+The issue of line positioning requires mitigating two problems.
+The first of these is the calculation of a line's height, which depends on a few factors.
+Secondly, because SVG does not provide a way of vertically justifying multiple lines of text, we must perform this in \gridSVG{}.
 
-    - problems with fonts?
+Calculating line heights appeared to be reasonably simple.
+This is because \grid{}'s graphic parameters defines a line's height to be $\mathtt{fontsize} \times \mathtt{cex} \times \mathtt{lineheight}$.
+These represent the font size in points, the character expansion and the line height multiplier.
+The character expansion is a multiplier applied to \texttt{fontsize} that determines the height of the characters in a text label.
+After calculating the character height, the result is multiplied by the value of \texttt{lineheight} to get a line's height.
+These are all numeric values that result in a size measured in points.
+While this calculation is straightforward, the resulting line height was incorrect for three reasons.
+
+%No font guarantee
+%Points inaccurate
+%Lineheight R GE
+
+One reason why the line height calculation is inaccurate is due to how fonts are handled in SVG.
+When a font is specified in SVG, there is no guarantee that it is the font that is used when the image is rendered.
+This is due to SVG using Cascading Style Sheets \citep{W3C11} for font selection.
+Font specification in SVG is merely a declaration of the preferred font for text.
+If we cannot guarantee which font is being used, we can only make a best guess at positioning with the fonts that we know are available in \R{}.
+Consequently the spacing between lines may be relatively larger or smaller, depending on the font selected by the web browser.
+
+When the size of a line is calculated in terms of points, as is the case in \grid{}, we run into a problem.
+Although there is a typographical definition for the size of a point ($^1/_{72}$ inches), points as a unit of measurement do not translate well to computer displays.
+In order to get the correct height of a line we need to apply a workaround in \gridSVG{}.
+
+We first obtain the height of the characters in the line, hereafter referred to as the character height.
+This involves creating a \grid{} text graphics object with a label consisting solely of an ``M".
+The new text graphics object is given the same \texttt{fontsize} and \texttt{cex} as the text we wish to draw.
+The reason why an ``M" is used is because it allows us to approximate the size of the largest character in a line.
+In other words, the ``M" will have the same height as what \grid{} calls a \texttt{char}.
+By using \grid{}'s unit conversion functions we can translate the actual height of the ``M" into usable SVG units.
+The resulting height of the ``M" text object is the character height within a line. 
+
+While \grid{} defines \texttt{lineheight} to be a multiplier on the height of the characters in a text label, doing this in SVG produces incorrect output.
+An example of this is shown in \autoref{fig:gridsvg-lineheight-broken}.
+
+\begin{figure}[H]
+\centering
+
+<<echo = FALSE, results = hide, fig = FALSE>>=
+library(grid)
+pdf("gridsvg-lineheight-correct.pdf")
+grid.newpage()
+grid.text("Hello,\nworld!", gp = gpar(fontsize = 144, cex = 1, lineheight = 1))
+dev.off()
+@
+
+\begin{subfigure}[c]{\textwidth}
+\centering
+\begin{rconsolecode}
+> grid.text("Hello,\nworld!",
++           gp = gpar(fontsize = 144,
++                     cex = 1,
++                     lineheight = 1))
+\end{rconsolecode}
+\caption{A \grid{} command that produces text with two lines.}
+\label{lst:gridsvg-lineheight-broken}
+\end{subfigure}
+\begin{subfigure}[t]{0.45\textwidth}
+\centering
+\fbox{\includegraphics[width = \textwidth]{./images/gridsvg-lineheight-broken.pdf}}
+\caption{An SVG image using line heights calculated from graphical parameters, using \autoref{lst:gridsvg-lineheight-broken}.}
+\label{subfig:gridsvg-lineheight-broken}
+\end{subfigure}
+\hspace{0.05\textwidth}
+\begin{subfigure}[t]{0.45\textwidth}
+\centering
+\fbox{\includegraphics[width = \textwidth]{./gridsvg-lineheight-correct.pdf}}
+\caption{The output from \autoref{lst:gridsvg-lineheight-broken} as it appears in \R{}.}
+\label{subfig:gridsvg-lineheight-correct}
+\end{subfigure}
+\caption{Comparing line heights between \gridSVG{} creates and what is expected.}
+\label{fig:gridsvg-lineheight-broken}
+\end{figure}
+
+Observing the two images in \autoref{fig:gridsvg-lineheight-broken}, we can see that the line height from the SVG image is too small.
+This is because the character height has been set to 144 points, and the line height is set to be the same as the character height.
+While the calculation used to arrange text in \autoref{subfig:gridsvg-lineheight-broken} is correct according to our earlier definition, we need it to match the output shown in \autoref{subfig:gridsvg-lineheight-correct}.
+The reason for the discrepancy in the line heights is due to the behaviour of the \R{} graphics engine.
+As a result, the line height does not match what is calculated using graphical parameters.
+By using the \R{} graphics engine's method of calculating line height we can create the correct output.
+
+While the issue of line height has been discussed, the other key problem in multi-line text is the correct justification of text.
+\grid{} text graphics objects can be justified vertically to the top, centre and bottom; and horizontally to the left, centre and right.
+SVG does not provide a way of vertically justifying text so this must be calculated in \gridSVG{}.
+Curiously, horizontal justification for multi-line text is supported in SVG and \gridSVG{} required no changes to be able to support it.
+Given that vertical justification is not provided by SVG, \gridSVG{} needed to implement justification algorithms to be able to justify text for three key cases: top, centre and bottom.
+
+The way in which justification occurs in \gridSVG{} requires some explanation.
+The method of line breaking used is shown in \autoref{lst:svg-text-options-2}.
+Because we are using a \texttt{<tspan>} element for each line, we have useful SVG attributes available to us.
+These attributes, \texttt{dx} and \texttt{dy}, refer to the offset relative to the previous line.
+A \texttt{dy} value of 10 on a \texttt{<tspan>} element means that we position it 10 units lower than the previous line.
+Given this information, we only need to justify the position the first line because every line after the first line will have a \texttt{dy} equal to the line height.
+The formulae used to justify the first line of text is shown in \autoref{tbl:gridsvg-vertical-justification-formulae}.
+
+\begin{table}[H]
+\centering
+
+\begin{tabular}{l c}
+Justification & First Line Offset Formula \\
+\midrule
+Top & \texttt{charheight} \\
+Centre & $- \left(\frac{\displaystyle ((\mathtt{n} - 1) \times \mathtt{lineheight}) - \mathtt{charheight}}{\displaystyle 2}\right)$  \\
+Bottom & $- (\mathtt{n} - 1) \times \mathtt{lineheight}$
+\end{tabular}
+\caption{Formulae used to vertically position the first line of text. \texttt{charheight} and \texttt{lineheight} refer to the character height and line height respectively. \texttt{n} is the number of lines in a text label.}
+\label{tbl:gridsvg-vertical-justification-formulae}
+\end{table}
+
+After implementing solutions the two key problems relating to multi-line text we are able to accurately draw \grid{} text graphics objects.
+We can observe the SVG output that \gridSVG{} produces given the code from \autoref{lst:gridsvg-newline-example}.
+This is shown in \autoref{lst:gridsvg-multiline-text}.
+
+\begin{listing}[H]
+\begin{xmlcode}
+<text text-anchor="middle" ... >
+  <tspan dy="-4.65">Hello,</tspan>
+  <tspan dy="19.44">world!</tspan>
+</text>
+\end{xmlcode}
+\caption{SVG code that appears as multi-line text, produced by \autoref{lst:gridsvg-newline-example}.}
+\label{lst:gridsvg-multiline-text}
+\end{listing}
+
+The SVG code shown in \autoref{lst:gridsvg-multiline-text} has text that is justified to the centre of the image, both horizontally and vertically.
+Horizontal justification to the centre is declared by \gridSVG{} setting the \texttt{text-anchor} attribute to \texttt{middle}.
+Vertical justification relative to the position of the text is demonstrated by the use of the \texttt{dy} attributes on the \texttt{<tspan>} elements.
+The value of 19.44 for the second \texttt{dy} attribute indicates that the line height that \gridSVG{} calculated was 19.44.
+The first \texttt{dy} attribute was also calculated to be $-4.65$ after applying the formula for centre justification in \autoref{tbl:gridsvg-vertical-justification-formulae}.
+Upon rendering, the image produces correctly positioned text, as shown in \autoref{subfig:gridsvg-lineheight-correct}.
 
 \subsection{Fonts}
 
-    - Fonts (explain [get/set]SVGFonts)
+A feature of \grid{}'s text graphics objects that has been briefly mentioned is that of fonts.
+A text graphics object can be drawn using a font specified by the \texttt{fontfamily} graphical parameter.
+The font can also be modified to be drawn in \textbf{bold}, \textit{italic}, \textsl{oblique} or both \textbf{\textit{bold and italic}}.
+To map these features to SVG, we translate \grid{} graphical parameters to CSS code.
+This CSS code is then applied to \texttt{<text>} elements through the use of the \texttt{style} attribute.
+
+The \texttt{fontfamily} graphical parameter provides the font that is used to draw a text graphics object.
+There is a direct mapping from the \texttt{fontfamily} parameter to a CSS property, \texttt{font-family}.
+This means that the translation is quite transparent, and an example of the translation is shown in \autoref{fig:gridsvg-fontfamily-code}.
+
+\begin{figure}[H]
+\centering
+
+\begin{subfigure}[c]{\textwidth}
+\centering
+\begin{rconsolecode}
+> grid.text("Hello, world!",
++           gp = gpar(fontfamily = "Helvetica"))
+\end{rconsolecode}
+\caption{\grid{} text using the Helvetica font.}
+\label{lst:gridsvg-fontfamily-grid}
+\end{subfigure}
+
+\begin{subfigure}[c]{\textwidth}
+\centering
+\begin{xmlcode}
+<text style="font-family: Helvetica;">
+  <tspan>Hello, world!</tspan>
+</text>
+\end{xmlcode}
+\caption{SVG text that uses the Helvetica font.}
+\label{lst:gridsvg-fontfamily-svg}
+\end{subfigure}
+\caption{Demonstrating the translation between \grid{} and CSS within SVG.}
+\label{fig:gridsvg-fontfamily-code}
+\end{figure}
+
+A key point to note about fonts in SVG is that they are not embedded within the document at any point.
+The \texttt{font-family} property simply declares the preferred font to use, if it is available.
+This means if you were to view the image that contains the code in \autoref{lst:gridsvg-fontfamily-svg} on a different machine, you may not see the Helvetica font in use.
+
+To ensure that a suitable font is used when viewing SVG text we can assign multiple fonts to the \texttt{font-family} property.
+The set of fonts that we assign to the \texttt{font-family} is known as a font stack.
+The reason we use a font stack is because of the behaviour of the \texttt{font-family} property when multiple fonts are present.
+The first font in the stack is applied if it is possible, otherwise the next font is used, and so on until the stack is exhausted.
+
+The Helvetica font that was referenced earlier can only be guaranteed in an Apple OSX operating system.
+Fonts with a similar appearance exist on other platforms, such as Arial for Microsoft Windows and FreeSans for open source operating systems like Linux.
+With this information, we can construct a font stack that makes a reasonable attempt at drawing text that looks similar on most platforms.
+This improves our example from \autoref{lst:gridsvg-fontfamily-svg} to \autoref{lst:gridsvg-fontfamily-multiplatform}.
+
+\begin{listing}[H]
+\begin{xmlcode}
+<text style="font-family: Helvetica,
+                          Arial,
+                          FreeSans,
+                          sans-serif;">
+  <tspan>Hello, world!</tspan>
+</text>
+\end{xmlcode}
+\caption{SVG text that uses a Helvetica-like font on most platforms.}
+\label{lst:gridsvg-fontfamily-multiplatform}
+\end{listing}
+
+The application of font stacks, as shown in \autoref{lst:gridsvg-fontfamily-multiplatform} allows us to be confident that the appearance of our text is consistent across most platforms.
+The example shows that Helvetica is first attempted to be used, then Arial, then FreeSans.
+If none of these fonts are present on a system, we use the web browser's default for a sans serif font.
+Because we would like \gridSVG{} images to appear consistent across all platforms, a default set of font stacks has been provided.
+These font stacks cater for the three common types of fonts that are used within \R{}, sans-serif, serif and monospace.
+The output from \gridSVG{} using these fonts stacks appears similar to \autoref{fig:gridsvg-default-fonts}.
+
+\begin{figure}[H]
+\centering
+
+<<echo = FALSE, results = hide, fig = FALSE>>=
+library(grid)
+pdf("grid-default-fonts.pdf")
+grid.newpage()
+grid.text("Hello, world!",
+          y = c(0.7, 0.5, 0.3),
+          hjust = 0.5,
+          gp = gpar(fontsize = 48,
+                    fontfamily = c("sans",
+                                   "serif",
+                                   "mono")))
+dev.off()
+@
+
+\fbox{\includegraphics[width = 0.4\textwidth]{./grid-default-fonts.pdf}}
+\caption{The appearance of different types of fonts in SVG.}
+\label{fig:gridsvg-default-fonts}
+\end{figure}
+
+While it is useful for \gridSVG{} to be able to handle common fonts, when a font unknown to \gridSVG{} is encountered unexpected behaviour may occur.
+The reason why this happens is because it is not known what type of font is being used.
+Because the type of the font is unknown, we cannot provide reasonable fallback fonts.
+We therefore assume the font is sans-serif and will therefore show a reasonable sans-serif font in the event that the user-specified font is not present.
+\autoref{fig:gridsvg-unknown-font} demonstrates this behaviour using the non-existent font ``Example".
+
+\begin{figure}[H]
+\centering
+
+\begin{subfigure}[c]{\textwidth}
+\centering
+\begin{rconsolecode}
+> grid.text("Hello, world!",
++           gp = gpar(fontfamily = "Example"))
+\end{rconsolecode}
+\caption{\grid{} text using the nonexistent font ``Example".}
+\label{lst:gridsvg-unknown-font}
+\end{subfigure}
+
+\begin{subfigure}[c]{\textwidth}
+\centering
+\begin{xmlcode}
+<text style="font-family: Example, Helvetica,
+                          Arial, ..., sans-serif;" >
+  <tspan>Hello, world!</tspan>
+</text>
+\end{xmlcode}
+\caption{SVG code that attempts to use the ``Example" font prior to rest of the sans-serif font stack.}
+\label{lst:gridsvg-unknown-font-svg}
+\end{subfigure}
+\caption{Demonstrating the behaviour when using an unknown font.}
+\label{fig:gridsvg-unknown-font}
+\end{figure}
+
+Rather than assuming that all fonts unknown to \gridSVG{} are sans-serif in nature, two functions were created that allow font stacks to be modified.
+These functions are \mbox{\texttt{getSVGFonts()}} and \texttt{setSVGFonts()}.
+
+\texttt{getSVGFonts()} returns a list of font stacks currently in use for sans-serif, serif and monospace fonts.
+By editing these font stacks we can choose which fonts we want to appear in our SVG image.
+Once the list has been modified, we apply the changes by passing the list to \texttt{setSVGFonts()}.
+This allows us to know in advance the effect setting a font has on the resulting CSS applied to an SVG \texttt{<text>} element.
+A typical example of the usage of these functions is shown in \autoref{fig:gridsvg-fontstack-workflow}.
+
+\begin{figure}[H]
+\centering
+
+\begin{subfigure}[c]{\textwidth}
+\centering
+\begin{rconsolecode}
+> fonts <- getSVGFonts() 
+> # Showing the names of the font stacks we can modify
+> names(fonts)
+[1] "sans"  "serif" "mono"
+> # Setting the monospaced font to be Inconsolata
+> fonts$mono <- "Inconsolata"
+> # Applying the modified font stack
+> setSVGFonts(fonts)
+> grid.text("Hello, world!", gp = gpar(fontfamily = "mono"))
+> gridToSVG()
+\end{rconsolecode}
+\caption{A basic workflow for modifying a font stack.}
+\label{lst:gridsvg-fontstack-code}
+\end{subfigure}
+
+\begin{subfigure}[c]{0.4\textwidth}
+\centering
+
+<<echo = FALSE, results = hide, fig = FALSE>>=
+library(gridSVG)
+fonts <- getSVGFonts()
+fonts$mono <- "Inconsolata"
+setSVGFonts(fonts)
+grid.newpage()
+grid.text("Hello, world!",
+          gp = gpar(fontsize = 72,
+                    fontfamily = "mono"))
+gridToSVG("gridsvg-fontstack-image.svg")
+@
+
+\fbox{\includegraphics[width = 0.8\textwidth]{./gridsvg-fontstack-image.svg.pdf}}
+\caption{The ``Inconsolata" font as it appears in SVG.}
+\label{fig:gridsvg-fontstack-image}
+\end{subfigure}
+\begin{subfigure}[c]{0.5\textwidth}
+\centering
+\begin{xmlcode}
+<text style="font-family:
+    Inconsolata, monospace;">
+  <tspan>Hello, world!</tspan>
+</text>
+\end{xmlcode}
+\caption{The SVG code produced from \autoref{lst:gridsvg-fontstack-code}.}
+\label{lst:gridsvg-fontstack-svg-code}
+\end{subfigure}
+
+\caption{Setting SVG images to use ``Inconsolata" as the default monospaced font.}
+\label{fig:gridsvg-fontstack-workflow}
+\end{figure}
+
+The code in \autoref{lst:gridsvg-fontstack-code} shows how the use of \texttt{getSVGFonts()} and \texttt{setSVGFonts()} can influence \gridSVG{}'s output.
+The first step taken is to first grab the font stacks that \gridSVG{} is currently using.
+We then inspect the list of font stacks to see the types of font stacks we can modify.
+Because we wish to draw monospaced text using the Inconsolata font, we set the monospaced font stack to store only Inconsolata. 
+The font changes are then applied to \gridSVG{} and then written out to SVG. 
+The image shown in \autoref{fig:gridsvg-fontstack-image} is the result of the operations, showing that the Inconsolata font is in use.
+This is confirmed by a subset of the output visible in \autoref{lst:gridsvg-fontstack-svg-code}, where the \texttt{font-family} property shows Inconsolata being present.
+
+The other \grid{} graphical parameter that controls the appearance of fonts is \texttt{fontface}.
+This is the parameter that determines whether a font is \textbf{bold} or \textit{italic}.
+The mapping from \grid{} to SVG is quite clear, though it requires two CSS properties to be used instead of just \texttt{fontface}.
+These properties are \texttt{font-weight} and \texttt{font-style}.
+\texttt{font-weight} determines the thickness of a font's text.
+This is used to embolden text.
+The \texttt{font-style} property is used to modify the shape of the text, for example italicise text.
+\autoref{tbl:fontface-mapping} shows the complete mapping from \texttt{fontface} to CSS properties in SVG.
+
+\begin{table}[H]
+\centering
+
+\begin{tabular}{l | l l}
+\texttt{fontface} Parameter & \texttt{font-weight} Value & \texttt{font-style} Value \\
+\midrule
+\texttt{plain} & \texttt{normal} & \texttt{normal} \\
+\texttt{bold} & \texttt{bold} & \texttt{normal} \\
+\texttt{italic} & \texttt{normal} & \texttt{italic} \\
+\texttt{oblique} & \texttt{normal} & \texttt{oblique} \\
+\texttt{bold.italic} & \texttt{bold} & \texttt{italic}
+\end{tabular}
+\caption{Mapping the \texttt{fontface} parameter to CSS properties.}
+\label{tbl:fontface-mapping}
+\end{table}
+
+With the added support of two \grid{} graphical parameters, \texttt{fontfamily} and \texttt{fontface}, \gridSVG{} can now draw text in SVG that reproduces the appearance of \grid{} text.
+
+\subsection{Raster Graphics Objects}
+
+\grid{} has the ability to include raster images into its plots.
+This presents a problem when writing to SVG because raster images cannot be represented as a vector graphic, even in SVG.
+Fortunately, SVG can import raster images (e.g. PNG, JPEG, GIF) through the use of the \texttt{<image />} element.
+This element imports a raster image that is not embedded within the SVG image itself.
+
+When translating \grid{}'s raster graphics objects to SVG, producing the SVG code is reasonably simple.
+However, complications in the translation process arise when we attempt to store raster graphics objects in a raster image format.
+The reason for the complication is the due to interpolation of raster images.
+Interpolation is the process of approximating the appearance of an image when it is scaled.
+\autoref{fig:gridsvg-raster-interpolation} shows the effect of interpolation using the \texttt{interpolate} parameter that is available on raster graphics objects.
+
+\begin{figure}[H]
+\centering
+
+<<echo = FALSE, results = hide, fig = FALSE>>=
+library(grid)
+pdf("gridsvg-raster-nointerpolate.pdf")
+grid.newpage()
+grid.raster(matrix(1:2/3, ncol=1), interpolate = FALSE)
+dev.off()
+
+pdf("gridsvg-raster-interpolate.pdf")
+grid.newpage()
+grid.raster(matrix(1:2/3, ncol=1), interpolate = TRUE)
+dev.off()
+@
+
+\begin{subfigure}[c]{0.45\textwidth}
+\centering
+\fbox{\includegraphics[width = 0.5\textwidth]{./gridsvg-raster-nointerpolate.pdf}}
+\caption{A raster image that is resized without interpolation.}
+\label{subfig:gridsvg-raster-nointerpolate}
+\end{subfigure}
+\begin{subfigure}[c]{0.45\textwidth}
+\centering
+\fbox{\includegraphics[width = 0.5\textwidth]{./gridsvg-raster-interpolate.pdf}}
+\caption{A raster image after resizing with interpolation.}
+\label{subfig:gridsvg-raster-interpolate}
+\end{subfigure}
+
+\caption{The appearance of resized raster images.}
+\label{fig:gridsvg-raster-interpolation}
+\end{figure}
+
+We can see in \autoref{fig:gridsvg-raster-interpolation} the behaviour of \grid{}'s interpolation.
+It turns the two pixel image into a gradient.
+When interpolation is absent, the two pixels are simply scaled to larger dimensions.
+If we were to scale the same image in a web browser, interpolation is always applied.
+There is no way of telling a browser, through SVG, not to interpolate an image.
+
+The approach that is taken by \gridSVG{} when there is no interpolation on raster graphics objects is to first write the raster to a PNG image.
+The PNG image is assumed to have the same dimensions as the space that is occupied by the largest appearance of the raster image in SVG.
+Despite SVG being resolution independent, we can make this assumption because the SVG images \gridSVG{} produces nominally use pixels for dimensions.
+The result of the decision to write to SVG dimensions results in PNG images that are not as small as possible.
+For example, in \autoref{fig:gridsvg-raster-interpolation} the raster object has only two pixels of data.
+This could be written to a PNG image that is two pixels high by one pixel wide.
+Instead, to avoid interpolation we write to a PNG image with larger dimensions, e.g. 200 pixels high by 100 pixels wide.
+
+When a raster graphics object has interpolation enabled, we use the same method of writing to a PNG file as if it were disabled.
+The reason for this is because a web browser may not interpolate an image in the same way that \R{} does.
+This is why we don't simply write a PNG image with the same dimensions as the raster graphics object.
+
+The PNG file that is produced is given the same file name as the \grid{} raster object, suffixed by \texttt{.png}.
+This is a clear naming scheme that allows us to reliably know the location that a raster image is saved to.
+Knowing the location of the raster image is necessary for SVG's \texttt{<image />} element, as it imports a raster image into the SVG image from a known location.
+A demonstration of the SVG image that \gridSVG{} produces from raster graphics objects is shown in \autoref{fig:gridsvg-raster-example}.
+
+\begin{figure}[H]
+\centering
+
+\begin{subfigure}[c]{\textwidth}
+\centering
+\begin{rconsolecode}
+> grid.raster(matrix(1:2/3, ncol=1))
+\end{rconsolecode}
+\caption{A basic raster image consisting of two pixels, identical in appearance to \autoref{subfig:gridsvg-raster-interpolate}.}
+\label{lst:gridsvg-raster-example}
+\end{subfigure}
+\begin{subfigure}[c]{\textwidth}
+\centering
+\begin{xmlcode}
+<g id="GRID.rastergrob.1">
+  <image id="GRID.rastergrob.1.1"
+         width="284" height="566"
+         xlink:href="GRID.rastergrob.1.png" />
+</g>
+\end{xmlcode}
+\caption{The SVG code produced from \autoref{lst:gridsvg-raster-example}.}
+\label{lst:gridsvg-raster-example-svg}
+\end{subfigure}
+
+\caption{The mapping of a \grid{} raster image to SVG.}
+\label{fig:gridsvg-raster-example}
+\end{figure}
+
+The example in \autoref{fig:gridsvg-raster-example} shows how a two pixel image, stored in a raster graphics object named \texttt{GRID.rastergrob.1} translates to SVG.
+Firstly, because there may be multiple appearances of the same raster image, we need a group element.
+The \mbox{\texttt{<image />}} element is given the name \texttt{GRID.rastergrob.1.1} because it is the first (and only) appearance of the raster image.
+The raster image has been turned into a PNG file with the name \texttt{GRID.rastergrob.1.png}, with a height and width of 566 and 284 respectively.
+In order to import this image into SVG, the \texttt{xlink:href} attribute uses the predetermined file name.
 
 \subsection{gTrees, viewports, frames and cellGrobs}
 
-    - gTrees \& viewports
+In the \grid{} graphics system, almost all graphics objects directly produce graphical content.
+However, a graphics object that does not do so is a \texttt{gTree}.
+A \texttt{gTree} is a graphics object that contains other graphics objects.
+These graphics objects may be common graphics objects like rectangle objects, but they can also be \texttt{gTree}s.
+An example where this might be applied is drawing text with a rectangular border.
+This is illustrated in \autoref{fig:gtree-example}.
 
-    - frames (and cells)
+\begin{figure}[H]
+\centering
 
-\subsection{Viewport clipping}
+<<echo = FALSE, results = hide, fig = FALSE>>=
+library(grid)
+pdf("gtree-example.pdf")
+grid.newpage()
+rg <- rectGrob(height = 0.3,
+                width = 0.9)
+tg <- textGrob("gTree Example", gp = gpar(fontsize = 48))
+ex <- gTree(children = gList(rg, tg),
+        name = "example-gTree")
+grid.draw(ex)
+dev.off()
+@
 
-    - Clipping
+\begin{subfigure}[c]{\textwidth}
+\centering
+\begin{rconsolecode}
+> rg <- rectGrob(height = 0.1, width = 0.3)
+> tg <- textGrob("gTree Example")
+> ex <- gTree(children = gList(rg, tg),
++             name = "example-gTree")
+> grid.draw(ex)
+> grid.ls()
+example-gTree
+  GRID.rect.1
+  GRID.text.2
+\end{rconsolecode}
+\caption{A basic \texttt{gTree} consisting of two graphics objects.}
+\label{lst:gtree-example}
+\end{subfigure}
+\begin{subfigure}[c]{\textwidth}
+\centering
+\fbox{\includegraphics[width = 0.4\textwidth]{./gtree-example.pdf}}
+\caption{The image produced from \autoref{lst:gtree-example}.}
+\label{subfig:gtree-example}
+\end{subfigure}
+
+\caption{Using a \texttt{gTree} to create bordered text.}
+\label{fig:gtree-example}
+\end{figure}
+
+\autoref{fig:gtree-example} requires explanation in order to understand the behaviour of \texttt{gTree}s.
+In the first two lines of \autoref{lst:gtree-example} we are creating a rectangle graphics object and a text graphics object.
+These graphics objects, \texttt{rg} and \texttt{tg}, have not been drawn yet and consequently are not on \grid{}'s display list.
+When creating the \texttt{gTree} on line 3, we use the \texttt{children} parameter to include the graphics objects in the \texttt{gTree}.
+The \texttt{gList()} function that is used on the \texttt{children} parameter simply groups the graphics objects together.
+Because the \texttt{gTree} graphics object we created has not been drawn yet, we draw it using \texttt{grid.draw()}.
+This gives the appearance of drawing both the rectangle and the text using one graphics object.
+Given that the \texttt{gTree} has been drawn, we can inspect it in \grid{}'s display list.
+The display list shows that our \texttt{gTree} has in fact been drawn, however, the names of the rectangle and text graphics objects are also present.
+The extra indentation applied to \texttt{GRID.rect.1} and \texttt{GRID.text.2} shows that they are children of our \texttt{gTree} named \texttt{example-gTree}.
+
+When using a \texttt{gTree}, we can determine the viewport it is drawn in using the \texttt{vp} parameter.
+This parameter, while supported on regular graphics objects, was not supported correctly on \texttt{gTree} objects.
+Without this support, plots created using the \textsf{ggplot2} library would fail to draw at all.
+This is because \textsf{ggplot2} plots are created by drawing a \texttt{gTree} that contains everything necessary to draw the entire plot.
+The solution to the \texttt{vp} problem will not be discussed due to the advanced knowledge of \grid{} required to understand it.
+
+There are common \grid{} graphics objects that are also \texttt{gTree}s.
+These graphics objects are \texttt{frame}s and \texttt{cellGrob}s.
+The \textsf{lattice} package often uses \texttt{frame}s and \texttt{cellGrob}s to create legends.
+In order to support these two graphics objects, only slight modifications needed to be made given that generic \texttt{gTree}s have been implemented.
+This was to support the parameters \texttt{framevp} and \texttt{cellvp} that are used instead of \texttt{vp}.
+The effect of this change is shown in \autoref{fig:lattice-legend-example}.
+
+\begin{figure}[H]
+\centering
+
+\begin{subfigure}[t]{0.4\textwidth}
+\centering
+\fbox{\includegraphics[width = 0.8\textwidth]{./images/lattice-legend-before.pdf}}
+\caption{A \textsf{lattice} demo plot before supporting \texttt{frame} and \texttt{cellGrob} graphics objects.}
+\label{subfig:lattice-legend-example-broken}
+\end{subfigure}
+\hspace{0.1\textwidth}
+\begin{subfigure}[t]{0.4\textwidth}
+\centering
+\fbox{\includegraphics[width = 0.8\textwidth]{./images/lattice-legend-after.pdf}}
+\caption{A \textsf{lattice} demo plot with a correct legend.}
+\label{subfig:lattice-legend-example-working}
+\end{subfigure}
+
+\caption{Demonstrating the effect of \texttt{frame} and \texttt{cellGrob} support.}
+\label{fig:lattice-legend-example}
+\end{figure}
+
+We can see in \autoref{subfig:lattice-legend-example-working} that several graphics objects are being drawn.
+There is in fact one \texttt{frame} that contains several \texttt{cellGrob}s, that contains the graphics objects that are components of the legend.
+
+\subsection{Points}
+
+A common feature of plots is that they often use points to represent observations.
+\gridSVG{} was lacking in its support of points for a few reasons.
+Firstly, it only supported two plotting characters, whereas \grid{} is able to support over 100.
+Secondly, it was assumed that when drawing a set of points, all points would have the same plotting character.
+The last area in which \gridSVG{} was deficient in its support of points was that the size of its points were often incorrect.
+
+To fix the first problem, the task of observing plotting characters present in \R{} and translating them to \grid{} graphical objects occurred.
+The reason why this translation is necessary is because SVG does not have an equivalent of a plotting character.
+This means that to draw a plotting symbol like a dot, we must use a \grid{} circle, which can map to an appropriate SVG element.
+For some plotting characters, it was necessary to produce multiple graphics objects.
+In this case we apply the same grouping rules as in Section 4.1.1.
+A demonstration of this is shown in \autoref{fig:pch10}.
+
+\begin{figure}[H]
+\centering
+
+\begin{subfigure}[t]{\textwidth}
+\centering
+
+<<echo = FALSE, results = hide, fig = FALSE>>=
+library(grid)
+pdf("pch10.pdf")
+grid.newpage()
+grid.points(x = 0.5, y = 0.5, pch = 10, default.units = "npc", gp = gpar(fontsize = 400))
+dev.off()
+@
+
+\fbox{\includegraphics[width = 0.25\textwidth]{./pch10.pdf}}
+\caption{Plotting character \#10.}
+\label{subfig:pch10}
+\end{subfigure}
+\hspace{0.05\textwidth}
+\begin{subfigure}[t]{\textwidth}
+\centering
+\begin{xmlcode}
+<g id="GRID.points.4">
+  <g id="GRID.points.4.1">
+    <polyline id="GRID.points.4.1.1" .../>
+    <polyline id="GRID.points.4.1.2" ... />
+    <circle id="GRID.points.4.1.3" ... />
+  </g>
+</g>
+\end{xmlcode}
+\caption{SVG code used to produce the plotting character in \autoref{subfig:pch10}.}
+\label{lst:pch10}
+\end{subfigure}
+
+\caption{Demonstrating the use of multiple elements when translating a plotting character.}
+\label{fig:pch10}
+\end{figure}
+
+We can see the grouping rules from Section 4.1.1 being applied through the use of the \texttt{<g>} element along with the naming scheme.
+The name of the graphics object must therefore be \texttt{GRID.points.4} and the point that we see is the first (and only) point produced from this graphics object.
+We then see three SVG elements in use, two of these are lines and one is a circle.
+The reason is because the plotting character is implemented as a \grid{} circle along with a vertical \grid{} line and a horizontal \grid{} line. 
+By implementing this method for several of the plotting characters, \gridSVG{} gains the ability to plot all characters to a reasonable degree of accuracy.
+A comparison of \grid{}'s implementation of plotting characters versus \gridSVG{}'s is shown in \autoref{fig:gridsvg-pch-support}.
+
+\begin{figure}[H]
+\centering
+
+\begin{subfigure}[t]{\textwidth}
+\centering
+
+<<echo = FALSE, results = hide, fig = FALSE>>=
+library(grid)
+library(gridSVG)
+pdf("grid-pch-support.pdf")
+grid.newpage()
+grid.points(x = 1:26 / 27, y = 1:26 / 27, pch = 0:25, default.units = "npc")
+dev.off()
+grid.newpage()
+grid.points(x = 1:26 / 27, y = 1:26 / 27, pch = 0:25, default.units = "npc")
+gridToSVG("gridsvg-pch-support.svg")
+@
+
+\fbox{\includegraphics[width = 0.4\textwidth]{./grid-pch-support.pdf}}
+\caption{Plotting characters $0-25$ as shown in \grid{}.}
+\label{subfig:grid-pch-support}
+\end{subfigure}
+\hspace{0.05\textwidth}
+\begin{subfigure}[t]{\textwidth}
+\centering
+\fbox{\includegraphics[width = 0.4\textwidth]{./gridsvg-pch-support.svg.pdf}}
+\caption{\gridSVG{} drawing plotting characters $0-25$.}
+\label{subfig:gridsvg-pch-support}
+\end{subfigure}
+
+\caption{Comparing the implementations of plotting characters between \grid{} and \gridSVG{}.}
+\label{fig:gridsvg-pch-support}
+\end{figure}
+
+Although not all of the plotting characters shown in \autoref{fig:gridsvg-pch-support} are identical, we can now draw any plotting character and have an implementation of it in SVG.
+
+Now that we can draw many plotting characters, it would be useful to be able to more than one when plotting a set of points.
+The correction to \gridSVG{} required vectorising the code so that checked which plotting character to use for each point.
+Previously it would only check for the plotting character that would be used on the first point and apply that to every point.
+
+The final fix to points is the point sizes.
+Often point sizes are defined using \grid{}'s \texttt{char} unit, as is the case with \textsf{lattice} plots. 
+This is reasonable because after all, it's a plotting \emph{char}acter that is being drawn.
+However, when the \texttt{char} unit is used, we cannot use the information present using a graphics object's graphical parameters to determine its actual size.
+This issue arose when we tackled the problem of multi-line text and the solution is much the same.
+Again, to find the height of a character we create a text object with the text ``M".
+The point object's graphical parameters are applied to the text object for correct sizing.
+We then use \grid{}'s unit conversion functions to turn the height of the ``M" into a more usable unit.
+This process allows us to produce more accurately sized points.
+
+\section{Viewport clipping}
+
+While viewports in \gridSVG{} were supported, they lacked the ability to apply the \texttt{clip} parameter.
+This parameter allows for clipping to occur on viewports.
+If a viewport enables clipping, then anything that attempts to draw beyond the boundaries of a viewport will not be shown.
+An example of clipping is shown in \autoref{fig:viewport-clipping-example}.
+
+\begin{figure}[H]
+\centering
+
+<<echo = FALSE, results = hide, fig = FALSE>>=
+library(grid)
+pdf("viewport-clipping.pdf")
+grid.newpage()
+pushViewport(viewport(width = 0.5, height = 0.5, clip = "on"))
+grid.rect(gp = gpar(lty = "dashed"))
+grid.text("Hello, world!", gp = gpar(fontsize = 56))
+popViewport()
+dev.off()
+@
+
+\begin{subfigure}[t]{\textwidth}
+\centering
+\begin{rconsolecode}
+> # Creating a new viewport in the middle of the plot
+> pushViewport(viewport(width = 0.5,
++                       height = 0.5,
++                       clip = "on"))
+> # Showing the size of the viewport
+> grid.rect(gp = gpar(lty = "dashed"))
+> # Drawing large text that exceeds the size of the viewport
+> grid.text("Hello, world!", gp = gpar(fontsize = 56))
+> # Leaving the viewport
+> popViewport()
+\end{rconsolecode}
+\caption{Code used to produce a viewport with clipping enabled.}
+\label{lst:viewport-clipping-example}
+\end{subfigure}
+\begin{subfigure}[t]{\textwidth}
+\centering
+
+\fbox{\includegraphics[width = 0.35\textwidth]{./viewport-clipping.pdf}}
+\caption{An example of viewport clipping in \grid{}, using code from \autoref{lst:viewport-clipping-example}.}
+\label{subfig:viewport-clipping-example}
+\end{subfigure}
+\caption{Demonstrating viewport clipping in \grid{}.}
+\label{fig:viewport-clipping-example}
+\end{figure}
+
+We can see that although the text ``Hello, world!" is drawn large enough to exceed the dimensions of the viewport, it is partially obscured.
+The application of clipping on viewports allows drawing to be restricted to a defined region.
+
+There are three options that a \grid{} viewport can take on its \texttt{clip} parameter.
+These options are ``on", ``inherit" and ``off".
+If \texttt{clip} is set to ``on", then no output will be drawn outside the dimensions of the viewport.
+When \texttt{clip} is set to ``off", all graphical output will be drawn regardless of whether it appears within the regions of the viewport.
+Lastly, the \texttt{clip} option of ``inherit" means that a viewport will clip to the same region as any viewports it exists within.
+For example if viewport has \texttt{clip} set to ``on", then any viewport created within viewport that uses ``inherit" will clip to the same region as the parent viewport.
+We can demonstrate this by modifying \autoref{fig:viewport-clipping-example} to produce \autoref{fig:viewport-inherit-example}.
+
+\begin{figure}[H]
+\centering
+
+<<echo = FALSE, results = hide, fig = FALSE>>=
+library(grid)
+pdf("viewport-inherit-clipping.pdf")
+grid.newpage()
+# Creating a new viewport in the middle of the plot
+pushViewport(viewport(width = 0.5, height = 0.5, clip = "on"))
+# Showing the size of the viewport
+grid.rect(gp = gpar(lty = "dashed"))
+# Creating another viewport in the middle of the current viewport
+pushViewport(viewport(width = 0.5, height = 0.5, clip = "inherit"))
+# Showing the size of the viewport
+grid.rect(gp = gpar(lty = "dashed"))
+# Drawing large text that exceeds the size of the current viewport
+grid.text("Hello, world!", gp = gpar(fontsize = 56))
+# Leaving both viewports
+popViewport()
+popViewport()
+dev.off()
+@
+
+\begin{subfigure}[t]{\textwidth}
+\centering
+\begin{rconsolecode}
+> # Creating a new viewport in the middle of the plot
+> pushViewport(viewport(width = 0.5, height = 0.5, clip = "on"))
+> # Showing the size of the viewport
+> grid.rect(gp = gpar(lty = "dashed"))
+> # Creating aviewport in the middle of the current viewport
+> pushViewport(viewport(width = 0.5, height = 0.5,
++                       clip = "inherit"))
+> # Showing the size of the viewport
+> grid.rect(gp = gpar(lty = "dashed"))
+> # Drawing text larger than the current viewport
+> grid.text("Hello, world!", gp = gpar(fontsize = 56))
+> # Leaving both viewports
+> popViewport()
+> popViewport()
+\end{rconsolecode}
+\caption{Code used to demonstrate a viewport that inherits a clipping region.}
+\label{lst:viewport-inherit-example}
+\end{subfigure}
+\begin{subfigure}[t]{\textwidth}
+\centering
+
+\fbox{\includegraphics[width = 0.35\textwidth]{./viewport-inherit-clipping.pdf}}
+\caption{An example of viewport clipping using ``inherit" in \grid{}, using code from \autoref{lst:viewport-inherit-example}.}
+\label{subfig:viewport-inherit-example}
+\end{subfigure}
+\caption{Demonstrating viewport clipping using ``inherit" in \grid{}.}
+\label{fig:viewport-inherit-example}
+\end{figure}
+
+We can see in \autoref{subfig:viewport-inherit-example} that the text does not get clipped to the viewport it is in.
+However, the viewport the text was drawn within inherited the clipping region of its viewport.
+This is why the text is drawn outside its viewport dimensions but is still partially clipped.
+
+When \gridSVG{} begins its process of creating SVG images, it parses what is present in the current plot and attempts to recreate it.
+In doing so, when \gridSVG{} moves into a viewport, its \texttt{clip} parameter is inspected.
+If the parameter is set to ``on", then we need to implement the clipping region in SVG.
+This does not require much extra work because \gridSVG{} already created a \texttt{<g>} element to group all of the graphics objects together that are drawn within it.
+The reason this is useful is because SVG allows us to define a clipping region on a \texttt{<g>} element, which affects all of the elements within the \texttt{<g>} element.
+A clipping region implemented in \gridSVG{} produces output similar to \autoref{lst:gridsvg-clippath-example}.
+
+\begin{listing}[H]
+\begin{xmlcode}
+<defs> 
+  <clipPath id="VP.clipPath"> 
+    <rect x="142" y="142" width="283" height="283" /> 
+  </clipPath> 
+</defs> 
+<g id="VP" clip-path="url(#VP.clipPath)"> 
+   ...
+</g> 
+\end{xmlcode}
+\caption{SVG code that clips a group of elements to the area of a rectangle.}
+\label{lst:gridsvg-clippath-example}
+\end{listing}
+
+What is being produced by \gridSVG{} looks similar to the code used to apply arrows to lines.
+We can see the use of the \texttt{<defs>} element, which allows the use of its contents to be referenced.
+Following this, we observe the \texttt{<clipPath>} element.
+This is the element that we reference when we want to clip a \texttt{<g>} element.
+The clipping path is defined as a rectangle that is, in this case, positioned at (142, 142) and has a height and width of 283.
+This means that anything outside this region will be clipped and therefore not drawn.
+We apply this clipping path to the \texttt{<g>} element in the same way we applied markers to line elements, using the \texttt{url()} function.
+Again we are required to implement a naming scheme so that we can reference the clipping path from the \texttt{<g>} element.
+The naming scheme used is to take the viewport's name and suffix it with \texttt{clipPath}.
+
+However, a problem is encountered due to the fact that when we create a group for a viewport, we would be giving it a non-unique identifier.
+This is because a viewport may be used multiple times by \gridSVG{} when drawing a plot.
+When a viewport was applied more than once, we ended up with multiple \texttt{<g>} elements with the same name.
+In doing so, when we would also create multiple clipping paths, all with the same name.
+When an SVG renderer attempts to work out which \texttt{<g>} element to clip, it will make a choice, but this behaviour is undefined.
+This means that \gridSVG{} would only be able to clip to a single usage of a given viewport. 
+
+The solution to this problem requires creating another naming scheme to ensure a unique identifier is applied to a \texttt{<g>} element.
+\gridSVG{} does this by keeping track of how many times a viewport has been used.
+The name that is applied to a \texttt{<g>} element now becomes the name of the viewport suffixed by the number of times the viewport has been used.
+For example, the first appearance of a viewport called \texttt{VP} will produce the name \texttt{VP.1}.
+A demonstration of this behaviour is shown in \autoref{fig:gridsvg-viewport-naming}.
+
+\begin{figure}[H]
+\centering
+
+\begin{subfigure}[t]{\textwidth}
+\centering
+\begin{rconsolecode}
+> # Storing a viewport named "example"
+> vp <- viewport(width = 0.5, height = 0.5, name = "example")
+> # First use of the "example" viewport
+> pushViewport(vp)
+> grid.rect()
+> popViewport()
+> # Second use of the "example" viewport
+> pushViewport(vp)
+> grid.circle()
+> popViewport()
+\end{rconsolecode}
+\caption{Code used to demonstrate a viewport that is used more than once.}
+\label{lst:viewport-naming-example}
+\end{subfigure}
+\begin{subfigure}[t]{\textwidth}
+\centering
+
+\begin{rconsolecode}
+<g id="example.1">
+  ...
+</g>
+<g id="example.2">
+  ...
+</g>
+\end{rconsolecode}
+
+\caption{A subset of \gridSVG{}'s output after processing \autoref{lst:viewport-naming-example}.}
+\label{lst:viewport-naming-output}
+\end{subfigure}
+\caption{Demonstrating \gridSVG{}'s viewport naming scheme.}
+\label{fig:gridsvg-viewport-naming}
+\end{figure}
+
+Using \autoref{fig:gridsvg-viewport-naming} we can observe that the first use of the viewport named ``example" produced an SVG \texttt{<g>} element with the name of \texttt{example.1}.
+The second use of the viewport produced a \texttt{<g>} element with the name \texttt{example.2}.
+This confirms that \gridSVG{} is now creating unique identifiers for viewports.
+We can now clip to \texttt{<g>} elements safely, using SVG code similar to what is shown in \autoref{lst:gridsvg-clippath-example}.
+
+Although \gridSVG{} can now clip to elements the only cases that have been implemented are when a viewport's \texttt{clip} parameter is \texttt{on} or \texttt{off}.
+This is because we only get to observe one viewport at a time.
+The only clipping region information we have available to us when inspecting a viewport is whether or not graphical output can exceed the viewport's dimensions.
+In order to support \texttt{inherit} we need to know the clipping region of a parent viewport, which \gridSVG{} cannot do at the moment.
+Further work in this area may be explored in future.
+
+\section{Animation}
+
+While most of the work involved in the development of \gridSVG{} involved creating accurate graphical output, a feature of \gridSVG{} that was also improved was it's ability to animate graphical objects.
+When animating a graphical object, \gridSVG{} is able to write an \texttt{<animate>} element that describes the behaviour of the animation.
+The \texttt{<animate>} element requires three key pieces of information: the name of an element, the attribute to be animated, values that the attribute is going to animate through.
+For example, in order to move a rectangle right from $(2, 0)$ to $(5, 0)$ the animate element needs to know the name of the circle, that the $x$ attribute is being changed and that it is being changed from 2 to 5.
+The function that \gridSVG{} provides that handles this task is \texttt{grid.animate()}.
+
+Some of the changes that were made to \gridSVG{} when improving its ability to draw plots caused \texttt{grid.animate()} to no longer function correctly.
+The most important of the changes is that there is no longer the assumption that one graphics object produces one SVG element.
+The naming scheme applied to SVG elements means that when we want to animate a graphics object like a rectangle, we need to know exactly how many visible rectangles the graphics object produces.
+For example, assume two rectangles have been produced from one graphics object named \texttt{GRID.rect.1}.
+When attempting to animate this graphics object using \gridSVG{}, the problem we encounter is that although the names given to SVG elements are known, \grid{} is not aware of them.
+This means that when animating the first rectangle in a rectangle object named \texttt{GRID.rect.1}, we cannot simply attempt to animate \texttt{GRID.rect.1.1} as it does not exist.
+
+The solution that was applied to \gridSVG{} is that a matrix of values can now be used to animate a graphics object, rather than a vector.
+The columns of each matrix refer to each of the sub graphics objects that a graphics object produces.
+Each of the rows is the value to be shown at a given time.
+Because a matrix is being used, \R{}'s behaviour regarding matrices requires us to provide values for every column of the matrix.
+Consequently, whenever animation occurs on a graphics object we need to animate every element produced by that object.
+An example of animation using a matrix is shown in \autoref{fig:animate-rect-matrix}.
+
+\begin{figure}[H]
+\centering
+
+<<echo = FALSE, results = hide, fig = FALSE>>=
+library(grid)
+pdf("animate-rect-matrix-1.pdf")
+grid.newpage()
+grid.rect(x = c(0.3, 0.7), y = 0.4,
+          width = 0.2, height = 0.2,
+          gp = gpar(fill = "black"))
+dev.off()
+pdf("animate-rect-matrix-2.pdf")
+grid.newpage()
+grid.rect(x = c(0.3, 0.7), y = c(0.4, 0.7),
+          width = 0.2, height = 0.2,
+          gp = gpar(fill = "black"))
+dev.off()
+pdf("animate-rect-matrix-3.pdf")
+grid.newpage()
+grid.rect(x = c(0.3, 0.7), y = 0.4,
+          width = 0.2, height = 0.2,
+          gp = gpar(fill = "black"))
+dev.off()
+@
+
+\begin{subfigure}[t]{\textwidth}
+\centering
+\begin{rconsolecode}
+> # Creating two rectangles using one graphics object
+> grid.rect(x = c(0.3, 0.7), y = 0.4,
++           width = 0.2, height = 0.2,
++           gp = gpar(fill = "black"))
+> # Finding out the name of the object
+> grid.ls()
+GRID.rect.1
+> # A matrix of y values to animate through
+> ymat <- matrix(c(rep(0.4, 3), 0.4, 0.7, 0.4), ncol = 2)
+> ymat
+     [,1] [,2]
+[1,]  0.4  0.4
+[2,]  0.4  0.7
+[3,]  0.4  0.4
+> # Applying the animation
+> grid.animate("GRID.rect.1", y = ymat)
+\end{rconsolecode}
+\caption{Code used to animate a single rectangle vertically.}
+\label{lst:animate-rect-matrix}
+\end{subfigure}
+\begin{subfigure}[t]{\textwidth}
+\centering
+
+\fbox{\includegraphics[width = 0.3\textwidth]{./animate-rect-matrix-1.pdf}}
+\fbox{\includegraphics[width = 0.3\textwidth]{./animate-rect-matrix-2.pdf}}
+\fbox{\includegraphics[width = 0.3\textwidth]{./animate-rect-matrix-3.pdf}}
+\caption{A rectangle moving vertically from $y = 0.4$ to $y = 0.7$ and back to $y = 0.4$.}
+\label{subfig:animate-rect-matrix}
+\end{subfigure}
+\caption{Demonstrating the animation of a graphics object that produces more than one SVG element.}
+\label{fig:animate-rect-matrix}
+\end{figure}
+
+The rectangle graphics object that was created in \autoref{fig:animate-rect-matrix} produces two visual rectangles.
+A matrix was then created for the purpose of moving the second rectangle from $y = 0.4$ to $y = 0.7$ and back to $y = 0.4$.
+In order to keep the first rectangle stationary we repeated 0.4 three times, producing the first column of the matrix.
+The second column of the matrix is simply the $y$ values we wish to animate the second rectangle through.
+We then call \texttt{grid.animate()} in order to declare that animation is to occur on a graphics object.
+The first parameter given is the name of the graphics object that is to be animated, any parameters following this are properties of the graphics object to be animated.
+In this case we are animating \texttt{GRID.rect.1} by its $y$ attribute using values in our matrix.
+
+The use of matrices to animate properties of a graphics object is a usable solution to our initial problem.
+However, it does come with some drawbacks.
+Our application of matrices assumes when animating positional or sizing attributes that they fulfil three requirements.
+The first of these requirements is that all values of the attribute have the same \grid{} unit.
+This means we can't correctly animate through a set of $x$ values where some of the $x$s are being specified in inches while others are in centimetres.
+Another requirement is that the units themselves cannot be complex units, i.e. units composed of more than one type of unit.
+An example of a complex unit would be where a height is specified as being 3 inches plus 2 centimetres.
+The third restriction is that the animation values use the same unit as the attribute they are animating.
+If a rectangle is one wide, anything that animates the rectangle's width must be measured in inches.
+
+The reason for these restrictions is the fact that matrices can be composed of either numeric, logical or character values.
+There is therefore no way of using \grid{}'s unit type to specify values to animate through.
+Any parameters of graphics objects that are character or logical values have no obvious drawbacks when using matrices to animate their values.
+
+When improving \texttt{grid.animate()} another issue that had to be mitigated was the fact that points can be composed of several types of graphics objects.
+

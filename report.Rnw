@@ -57,7 +57,9 @@
 \newcommand{\R}{\textsf{R}}
 
 % Renaming the bibliography section with the name `References`.
-\addto{\captionsenglish}{\renewcommand{\bibname}{References}}
+% Renaming the List of listings by capitalising to `Listings`.
+\addto{\captionsnewzealand}{\renewcommand{\bibname}{References}}
+\addto{\captionsnewzealand}{\renewcommand{\listoflistingscaption}{List of Listings}}
 
 % Document properties.
 \newcommand{\doctitle}{Web-based Interactive Graphics with gridSVG}
@@ -69,13 +71,6 @@
 \hypersetup{pdftitle = {\doctitle{} | \docauthor{}},
             pdfauthor = {\docauthor{}},
             pdfborder = {0 0 0.5}}
-
-% Avoiding the need to keep loading libraries
-<<echo = FALSE, fig = FALSE>>=
-library(gridSVG)
-library(lattice)
-library(ggplot2)
-@
 
 \begin{document}
 
