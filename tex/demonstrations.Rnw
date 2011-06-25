@@ -1,3 +1,101 @@
 \chapter{Demonstrations}
 
-\ldots
+In order to show the progress that has been made and the possibilities of \gridSVG{}, some demonstrations of animated and interactive graphics have been made.
+All figures showing demonstrations are screenshots taken while viewing the images in a modern web browser.
+
+The first example, \autoref{fig:demo-tooltip}, is a \textsf{lattice} plot that demonstrates interactivity.
+When the mouse cursor hovers over a graphical element, it shows a tooltip that bears the name of the \grid{} graphics object that produced the element.
+
+\begin{figure}[H]
+\centering
+
+\fbox{\includegraphics[width = 0.35\textwidth]{./images/tooltip-demo-1.png}}
+\fbox{\includegraphics[width = 0.35\textwidth]{./images/tooltip-demo-2.png}}
+\fbox{\includegraphics[width = 0.35\textwidth]{./images/tooltip-demo-3.png}}
+
+\caption{A plot showing a tooltip of each graphics object's name.}
+\label{fig:demo-tooltip}
+\end{figure}
+
+% Forcing a page break for a new example
+\pagebreak
+
+The example shown in \autoref{fig:demo-huber} is another demonstration of interactivity within a \textsf{lattice} plot.
+In this case, it is used to show additional information about an observation in the plot.
+When hovering over a point on the plot, the point itself doubles its radius while the text at the bottom of the plot shows the name relating to the observation.
+
+\begin{figure}[H]
+\centering
+
+\fbox{\includegraphics[width = 0.45\textwidth]{./images/huber-demo-1.png}}
+\fbox{\includegraphics[width = 0.45\textwidth]{./images/huber-demo-2.png}} \\
+\fbox{\includegraphics[width = 0.45\textwidth]{./images/huber-demo-3.png}}
+
+\caption{Showing the effect of hovering over a point in an interactive plot.}
+\label{fig:demo-huber}
+\end{figure}
+
+% Forcing a page break for a new example
+\pagebreak
+
+While interactivity has been shown, animation is a key feature of the types of plots \gridSVG{} can create.
+In order to illustrate this, an example, \autoref{fig:demo-wildanim}, was created that shows a sample being gathered from a population of data.
+A boxplot is then drawn from this sample to summarise the data.
+
+The animation shows points from the population ``falling" into the sample until all of the sample points have moved down.
+The boxplot is then drawn on the sample, and moves down to its final position.
+
+\begin{figure}[H]
+\centering
+
+\fbox{\includegraphics[width = 0.45\textwidth]{./images/wildanim-demo-1.png}}
+\fbox{\includegraphics[width = 0.45\textwidth]{./images/wildanim-demo-2.png}} \\
+\fbox{\includegraphics[width = 0.45\textwidth]{./images/wildanim-demo-3.png}}
+
+\caption{An animated example of points being samples from a population, then summarised using a boxplot.}
+\label{fig:demo-wildanim}
+\end{figure}
+
+% Forcing a page break for a new example
+\pagebreak
+
+Time series information is an obvious area in which animation can be applied.
+An animated plot, \autoref{fig:demo-stock-prices}, has been created that plots the log of stock prices for well known technology companies over 1 year.
+The lines that represent the stock prices of the companies draw over time until the end of the year of data.
+
+\begin{figure}[H]
+\centering
+
+\fbox{\includegraphics[width = 0.45\textwidth]{./images/stock-prices-demo-1.png}} \\
+\fbox{\includegraphics[width = 0.45\textwidth]{./images/stock-prices-demo-2.png}} \\
+\fbox{\includegraphics[width = 0.45\textwidth]{./images/stock-prices-demo-3.png}}
+
+\caption{An animated example of time series data. The lines appear to draw themselves over time.}
+\label{fig:demo-stock-prices}
+\end{figure}
+
+% Forcing a page break for a new example
+\pagebreak
+
+The final demonstration is an implementation of the type of plot made famous by Hans Rosling and the Gapminder software package \citep{Gap11}.
+In \autoref{fig:demo-gapminder} we have several variables to consider.
+We are plotting life expectancy against the number of children per woman for each country.
+This is animated over time so each ``bubble" moves over time.
+The size of each ``bubble" is determined by the population of the country it represents.
+There are six plotting regions, one for each continent.
+We observe that over time the ``bubbles" move towards the top-left, indicating a trend towards an improvement in life expectancy and a reduction in the number of children per woman.
+
+\begin{center}
+\fbox{\includegraphics[width = 0.7\textwidth]{./images/gapminder-demo-1.png}} \\
+\fbox{\includegraphics[width = 0.7\textwidth]{./images/gapminder-demo-2.png}} \\
+\end{center}
+
+\begin{figure}[H]
+\centering
+
+\fbox{\includegraphics[width = 0.7\textwidth]{./images/gapminder-demo-3.png}}
+
+\caption{An example of a Gapminder-like ``bubble" plot.}
+\label{fig:demo-gapminder}
+\end{figure}
+

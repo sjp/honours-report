@@ -9,7 +9,7 @@
 
 % While microtype produces nice results,
 % change font size by no more than 1%.
-\usepackage[stretch = 10]{microtype}
+\usepackage{microtype}
 
 % Might want to mess with page geometry at some point.
 % Handy to have just in case.

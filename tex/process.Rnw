@@ -1777,6 +1777,21 @@ GRID.rect.1
 \caption{A rectangle moving vertically from $y = 0.4$ to $y = 0.7$ and back to $y = 0.4$.}
 \label{subfig:animate-rect-matrix}
 \end{subfigure}
+\begin{subfigure}[t]{\textwidth}
+\centering
+\begin{xmlcode}
+<animate xlink:href="#GRID.rect.1.1"
+         attributeName="y" values="170;170;170" ... /> 
+<animate xlink:href="#GRID.rect.1.2"
+         attributeName="y" values="170;340;170" ... /> 
+<g id="GRID.rect.1"  > 
+  <rect id="GRID.rect.1.1" ... />
+  <rect id="GRID.rect.1.2" ... />
+</g> 
+\end{xmlcode}
+\caption{SVG code produced by \gridSVG{}.}
+\label{lst:animate-rect-svg}
+\end{subfigure}
 \caption{Demonstrating the animation of a graphics object that produces more than one SVG element.}
 \label{fig:animate-rect-matrix}
 \end{figure}
@@ -1788,6 +1803,8 @@ The second column of the matrix is simply the $y$ values we wish to animate the 
 We then call \texttt{grid.animate()} in order to declare that animation is to occur on a graphics object.
 The first parameter given is the name of the graphics object that is to be animated, any parameters following this are properties of the graphics object to be animated.
 In this case we are animating \texttt{GRID.rect.1} by its $y$ attribute using values in our matrix.
+When \gridSVG{} writes this to SVG we can see that the \texttt{<animate>} elements refer to each of our rectangle elements.
+The \texttt{attributeName} states that we are animating by $y$, and the \texttt{values} indicate the values we are animating through, separated by semicolons.
 
 The use of matrices to animate properties of a graphics object is a usable solution to our initial problem.
 However, it does come with some drawbacks.
@@ -1804,4 +1821,12 @@ There is therefore no way of using \grid{}'s unit type to specify values to anim
 Any parameters of graphics objects that are character or logical values have no obvious drawbacks when using matrices to animate their values.
 
 When improving \texttt{grid.animate()} another issue that had to be mitigated was the fact that points can be composed of several types of graphics objects.
+Consequently, a parameter of a \grid{} graphics object can map to many different SVG attributes.
+An example of this a plotting character composed of a circle and a couple of lines (see \autoref{subfig:pch10}).
+When animating its $x$ values, we need to move the circle along its \texttt{cx} attribute in SVG, while the line must be animated by its \texttt{points} attribute.
+This means when extending animation support for points graphics objects, we need to know the structure of the plotting character that is being animated.
+The current solution is simply to implement support for each plotting character individually.
+This means any change in how \gridSVG{} draws a plotting character may break animation support for that plotting character.
 
+The method of animating \grid{} graphics objects has been revised to account for recent developments in \gridSVG{}.
+Several graphics objects can now be animated along many of their properties.
