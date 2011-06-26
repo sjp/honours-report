@@ -4,9 +4,9 @@ While \gridSVG{} was able to produce basic plots, it lacked the ability to handl
 Moreover, \gridSVG{} did not have any understanding of many of the properties that \grid{} graphics objects have.
 This section details the processes and decisions made when extending \gridSVG{}.
 
-\section{Mapping of grid grobs to SVG elements}
+\section{Mapping of \grid{} graphics objects to SVG elements}
 
-\subsection{Grobs and sub-grobs}
+\subsection{Graphics objects and sub graphics objects}
 
 When translating \grid{} graphics objects to SVG, there are cases where a one-to-one mapping cannot occur.
 The reason why this happens is because one \grid{} graphics object can require many SVG elements to represent it.
@@ -110,7 +110,7 @@ Unfortunately this introduces a problem relating to the naming of SVG elements.
 We would like the names of the SVG elements to match the names of our \grid{} graphics objects.
 If we create multiple SVG elements for a single \grid{} graphics object, the original name cannot be applied to multiple SVG elements.
 This is because SVG requires the name of each SVG element to be unique.
-This problem can be resovled by determining an appropriate naming scheme for cases where multiple SVG elements are produced.
+This problem can be resolved by determining an appropriate naming scheme for cases where multiple SVG elements are produced.
 
 When multiple SVG elements are produced by a \grid{} graphics function with an \texttt{id} parameter, the naming scheme is simple.
 We name each of the resulting elements by using the original name of the graphics object, suffixed by a full stop and the \texttt{id} of the graphics object.
@@ -498,7 +498,7 @@ The \texttt{d} attribute of the \texttt{<path />} element uses output from \text
 Comparing figures \ref{fig:grid-open-xspline} and \ref{fig:grid-closed-xspline}, we can see that decision to use different graphics objects has only a minor effect to the resulting SVG code.
 More importantly, the output that is produced by x-splines is visually accurate.
 
-\subsection{Markers}
+\subsection{Arrows}
 
 Within the \grid{} graphics system, some graphics objects have the option of being drawn with an arrow.
 All graphics objects that support arrows are some variation of a line.
@@ -606,7 +606,7 @@ This path would appear similar to \autoref{fig:svg-marker-definition-1}.
 
 As an arrow can be applied to either end of a line, the markers that we draw in SVG should be able to handle both line ends.
 This requires producing a \texttt{<marker>} element for each line end that arrows appear on.
-The decision was made to always create two \texttt{marker} elements so that it is possible in JavaScript to enable or disable arrows at either end.
+The decision was made to always create two \texttt{<marker>} elements so that it is possible in JavaScript to enable or disable arrows at either end.
 
 Once again the issue of a naming scheme is raised as we cannot create two markers with the same name.
 The naming scheme that is applied to markers is we first take the name of graphics object that contains arrows and suffix it with one of \texttt{markerStart} or \texttt{markerEnd}.
@@ -768,7 +768,7 @@ This means that \gridSVG{} assumed that \verb|\n| simply meant the characters \v
 \gridSVG{} therefore had to remove this assumption and recognise that some characters have a special meaning associated with them.
 
 To implement multi-line text in SVG, the SVG specification offers two solutions.
-One solution is to use multiple \texttt{<text>} elements to hold the text, one element per line of text.
+One solution is to use multiple \texttt{<text>} elements to hold the text; one element per line of text.
 The other solution is to use one \texttt{<text>} element but use a \texttt{<tspan>} element for each line of text.
 Both of these methods require the position of each line to be calculated, however the latter option is going to be used.
 The reason is by having a single \texttt{<text>} element, the SVG images that \gridSVG{} creates will be able to support text selection over multiple lines.
@@ -813,7 +813,7 @@ The first of these is the calculation of a line's height, which depends on a few
 Secondly, because SVG does not provide a way of vertically justifying multiple lines of text, we must perform this in \gridSVG{}.
 
 Calculating line heights appeared to be reasonably simple.
-This is because \grid{}'s graphic parameters defines a line's height to be $\mathtt{fontsize} \times \mathtt{cex} \times \mathtt{lineheight}$.
+This is because \grid{}'s graphical parameters defines a line's height to be $\mathtt{fontsize} \times \mathtt{cex} \times \mathtt{lineheight}$.
 These represent the font size in points, the character expansion and the line height multiplier.
 The character expansion is a multiplier applied to \texttt{fontsize} that determines the height of the characters in a text label.
 After calculating the character height, the result is multiplied by the value of \texttt{lineheight} to get a line's height.
@@ -916,7 +916,7 @@ Bottom & $- (\mathtt{n} - 1) \times \mathtt{lineheight}$
 \label{tbl:gridsvg-vertical-justification-formulae}
 \end{table}
 
-After implementing solutions the two key problems relating to multi-line text we are able to accurately draw \grid{} text graphics objects.
+After implementing solutions to the two key problems relating to multi-line text we are able to accurately draw \grid{} text graphics objects.
 We can observe the SVG output that \gridSVG{} produces given the code from \autoref{lst:gridsvg-newline-example}.
 This is shown in \autoref{lst:gridsvg-multiline-text}.
 
@@ -1036,7 +1036,7 @@ dev.off()
 While it is useful for \gridSVG{} to be able to handle common fonts, when a font unknown to \gridSVG{} is encountered unexpected behaviour may occur.
 The reason why this happens is because it is not known what type of font is being used.
 If the type of the font is unknown, we cannot provide reasonable fallback fonts.
-We therefore assume the font is sans-serif and will show a reasonable sans-serif font in the event that the user-specified font is not present.
+We therefore assume the font is sans serif and will show a reasonable sans serif font in the event that the user-specified font is not present.
 \autoref{fig:gridsvg-unknown-font} demonstrates this behaviour using the non-existent font ``Example".
 
 \begin{figure}[H]
@@ -1537,7 +1537,7 @@ These options are ``on", ``inherit" and ``off".
 If \texttt{clip} is set to ``on", then no output will be drawn outside the dimensions of the viewport.
 When \texttt{clip} is set to ``off", all graphical output will be drawn regardless of whether it appears within the regions of the viewport.
 Lastly, the \texttt{clip} option of ``inherit" means that a viewport will clip to the same region as any viewports it exists within.
-For example if viewport has \texttt{clip} set to ``on", then any viewport created within that viewport which uses ``inherit" will clip to the same region as the parent viewport.
+For example if a viewport has \texttt{clip} set to ``on", then any viewport created within that viewport which uses ``inherit" will clip to the same region as the parent viewport.
 We can demonstrate this by modifying \autoref{fig:viewport-clipping-example} to produce \autoref{fig:viewport-inherit-example}.
 
 \begin{figure}[H]
@@ -1688,7 +1688,7 @@ The second use of the viewport produced a \texttt{<g>} element with the name \te
 This confirms that \gridSVG{} is now creating unique identifiers for viewports.
 We can now clip to \texttt{<g>} elements safely, using SVG code similar to what is shown in \autoref{lst:gridsvg-clippath-example}.
 
-Although \gridSVG{} can now clip to elements the only cases that have been implemented are when a viewport's \texttt{clip} parameter is \texttt{on} or \texttt{off}.
+Although \gridSVG{} can now clip to elements, the only cases that have been implemented are when a viewport's \texttt{clip} parameter is \texttt{on} or \texttt{off}.
 This is because we can only get to inspect one viewport at a time.
 The only clipping region information we have available to us when inspecting a viewport is whether or not graphical output can exceed the viewport's dimensions.
 In order to support \texttt{inherit} we need to know the clipping region of a parent viewport, which \gridSVG{} cannot do at the moment.

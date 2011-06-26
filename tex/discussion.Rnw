@@ -73,7 +73,7 @@ GRID.text.1
 Observing the different SVG code produced, we can see that \textsf{SVGAnnotation} has little information to work with.
 There is no way of knowing directly from the output that the text object we used was in fact \texttt{GRID.text.1}.
 We can clearly see in \gridSVG{}'s SVG code what \texttt{GRID.text.1} has been translated to.
-This means that anyone who wishes to write JavaScript that interacts with the SVG image will know in advance exactly what they need to target, the name of the \grid{} graphics object.
+This means that anyone who wishes to write JavaScript that interacts with the SVG image will know in advance exactly what they need to target --- the name of the \grid{} graphics object.
 
 The output produced by the \texttt{svg()} device will be more accurate to the image shown when viewing a plot in \R{}.
 However, there are several advantages in the approach that \gridSVG{} takes.
@@ -196,7 +196,7 @@ Because SVG is text based and there is a lot of repeated text, SVG compresses we
 This is not immediately useful for distribution because web browsers cannot view compressed SVG images and simply download the image instead.
 However, all the popular web server applications currently in use can be configured to compress SVG on-the-fly.
 This means that if a web browser is able to accept compressed text, it will be sent compressed text, and decompressed automatically by the browser.
-Now we can still show and store large SVG files, but they are delivered as if they were zipped.
+Now we can still show and store large SVG files, but they are delivered as if they were compressed.
 
 A demonstration of the benefits of compression uses the stock ticker demonstration in \autoref{fig:demo-stock-prices}.
 This image is 8.5MB in size, but it compresses down to just 86kB.

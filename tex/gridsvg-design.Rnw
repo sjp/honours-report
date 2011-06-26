@@ -194,7 +194,7 @@ SVG images are described using text, therefore we can use the facilities present
 
 We can see that the XML code used to produce the image in \autoref{fig:svg-syntax-example} is quite readable.
 An SVG image has been created that is 100 by 100 units.
-It contains a \texttt{rect} element that is positioned at (30, 20) and is 30 units wide by 50 units high.
+It contains a \texttt{<rect>} element that is positioned at (30, 20) and is 30 units wide by 50 units high.
 Note that in SVG, the origin is located at the top-left of the plotting region, while in \R{} it is at the bottom-left of the plotting region.
 This means that higher $y$ values correspond to lower positions on the plotting region.
 Another important thing to note is the \texttt{id} attribute, which \gridSVG{} will use when naming SVG elements.
