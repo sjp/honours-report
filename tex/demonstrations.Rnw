@@ -60,7 +60,7 @@ The boxplot is then drawn on the sample, and moves down to its final position.
 \pagebreak
 
 Time series information is an obvious area in which animation can be applied.
-An animated plot, \autoref{fig:demo-stock-prices}, has been created that plots the log of stock prices for well known technology companies over 1 year.
+An animated plot, \autoref{fig:demo-stock-prices}, has been created that plots the log of stock prices for well known technology companies over a year.
 The lines that represent the stock prices of the companies draw over time until the end of the year of data.
 
 \begin{figure}[H]

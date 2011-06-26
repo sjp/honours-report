@@ -820,10 +820,6 @@ After calculating the character height, the result is multiplied by the value of
 These are all numeric values that result in a size measured in points.
 While this calculation is straightforward, the resulting line height was incorrect for three reasons.
 
-%No font guarantee
-%Points inaccurate
-%Lineheight R GE
-
 One reason why the line height calculation is inaccurate is due to how fonts are handled in SVG.
 When a font is specified in SVG, there is no guarantee that it is the font that is used when the image is rendered.
 This is due to SVG using Cascading Style Sheets \citep{W3C11} for font selection.
@@ -1012,7 +1008,7 @@ The application of font stacks, as shown in \autoref{lst:gridsvg-fontfamily-mult
 The example shows that Helvetica is first attempted to be used, then Arial, then FreeSans.
 If none of these fonts are present on a system, we use the web browser's default for a sans serif font.
 Because we would like \gridSVG{} images to appear consistent across all platforms, a default set of font stacks has been provided.
-These font stacks cater for the three common types of fonts that are used within \R{}, sans-serif, serif and monospace.
+These font stacks cater for the three common types of fonts that are used within \R{}, sans serif, serif and monospace.
 The output from \gridSVG{} using these fonts stacks appears similar to \autoref{fig:gridsvg-default-fonts}.
 
 \begin{figure}[H]
@@ -1039,8 +1035,8 @@ dev.off()
 
 While it is useful for \gridSVG{} to be able to handle common fonts, when a font unknown to \gridSVG{} is encountered unexpected behaviour may occur.
 The reason why this happens is because it is not known what type of font is being used.
-Because the type of the font is unknown, we cannot provide reasonable fallback fonts.
-We therefore assume the font is sans-serif and will therefore show a reasonable sans-serif font in the event that the user-specified font is not present.
+If the type of the font is unknown, we cannot provide reasonable fallback fonts.
+We therefore assume the font is sans-serif and will show a reasonable sans-serif font in the event that the user-specified font is not present.
 \autoref{fig:gridsvg-unknown-font} demonstrates this behaviour using the non-existent font ``Example".
 
 \begin{figure}[H]
@@ -1071,10 +1067,10 @@ We therefore assume the font is sans-serif and will therefore show a reasonable 
 \label{fig:gridsvg-unknown-font}
 \end{figure}
 
-Rather than assuming that all fonts unknown to \gridSVG{} are sans-serif in nature, two functions were created that allow font stacks to be modified.
+Rather than assuming that all fonts unknown to \gridSVG{} are sans serif in nature, two functions were created that allow font stacks to be modified.
 These functions are \mbox{\texttt{getSVGFonts()}} and \texttt{setSVGFonts()}.
 
-\texttt{getSVGFonts()} returns a list of font stacks currently in use for sans-serif, serif and monospace fonts.
+\texttt{getSVGFonts()} returns a list of font stacks currently in use for sans serif, serif and monospace fonts.
 By editing these font stacks we can choose which fonts we want to appear in our SVG image.
 Once the list has been modified, we apply the changes by passing the list to \texttt{setSVGFonts()}.
 This allows us to know in advance the effect setting a font has on the resulting CSS applied to an SVG \texttt{<text>} element.
@@ -1341,7 +1337,7 @@ When using a \texttt{gTree}, we can determine the viewport it is drawn in using 
 This parameter, while supported on regular graphics objects, was not supported correctly on \texttt{gTree} objects.
 Without this support, plots created using the \textsf{ggplot2} library would fail to draw at all.
 This is because \textsf{ggplot2} plots are created by drawing a \texttt{gTree} that contains everything necessary to draw the entire plot.
-The solution to the \texttt{vp} problem will not be discussed due to the advanced knowledge of \grid{} required to understand it.
+The detailed solution to the \texttt{vp} problem will not be discussed here.
 
 There are common \grid{} graphics objects that are also \texttt{gTree}s.
 These graphics objects are \texttt{frame}s and \texttt{cellGrob}s.
@@ -1372,7 +1368,7 @@ The effect of this change is shown in \autoref{fig:lattice-legend-example}.
 \end{figure}
 
 We can see in \autoref{subfig:lattice-legend-example-working} that several graphics objects are being drawn.
-There is in fact one \texttt{frame} that contains several \texttt{cellGrob}s, that contains the graphics objects that are components of the legend.
+There is in fact one \texttt{frame} that contains several \texttt{cellGrob}s, each containing the graphics objects that are components of the legend.
 
 \subsection{Points}
 
@@ -1380,9 +1376,9 @@ A common feature of plots is that they often use points to represent observation
 \gridSVG{} was lacking in its support of points for a few reasons.
 Firstly, it only supported two plotting characters, whereas \grid{} is able to support over 100.
 Secondly, it was assumed that when drawing a set of points, all points would have the same plotting character.
-The last area in which \gridSVG{} was deficient in its support of points was that the size of its points were often incorrect.
+Finally, \gridSVG{} was deficient in its support of points in that the size of its points were often incorrect.
 
-To fix the first problem, the task of observing plotting characters present in \R{} and translating them to \grid{} graphical objects occurred.
+To fix the first problem, the task of observing plotting characters present in \R{} and translating them to \grid{} graphical objects was undertaken.
 The reason why this translation is necessary is because SVG does not have an equivalent of a plotting character.
 This means that to draw a plotting symbol like a dot, we must use a \grid{} circle, which can map to an appropriate SVG element.
 For some plotting characters, it was necessary to produce multiple graphics objects.
@@ -1470,9 +1466,9 @@ gridToSVG("gridsvg-pch-support.svg")
 
 Although not all of the plotting characters shown in \autoref{fig:gridsvg-pch-support} are identical, we can now draw any plotting character and have an implementation of it in SVG.
 
-Now that we can draw many plotting characters, it would be useful to be able to more than one when plotting a set of points.
-The correction to \gridSVG{} required vectorising the code so that checked which plotting character to use for each point.
-Previously it would only check for the plotting character that would be used on the first point and apply that to every point.
+Now that we can draw many plotting characters, it would be useful to be able to use more than one when plotting a set of points.
+The correction to \gridSVG{} required vectorising the code so that it checked which plotting character to use for each point.
+Previously it would only check for the plotting character that would be used on the first point and applied it to every point.
 
 The final fix to points is the point sizes.
 Often point sizes are defined using \grid{}'s \texttt{char} unit, as is the case with \textsf{lattice} plots. 
@@ -1533,7 +1529,7 @@ dev.off()
 \label{fig:viewport-clipping-example}
 \end{figure}
 
-We can see that although the text ``Hello, world!" is drawn large enough to exceed the dimensions of the viewport, it is partially obscured.
+We can see that because the text ``Hello, world!" is drawn large enough to exceed the dimensions of the viewport, it is partially obscured.
 The application of clipping on viewports allows drawing to be restricted to a defined region.
 
 There are three options that a \grid{} viewport can take on its \texttt{clip} parameter.
@@ -1541,7 +1537,7 @@ These options are ``on", ``inherit" and ``off".
 If \texttt{clip} is set to ``on", then no output will be drawn outside the dimensions of the viewport.
 When \texttt{clip} is set to ``off", all graphical output will be drawn regardless of whether it appears within the regions of the viewport.
 Lastly, the \texttt{clip} option of ``inherit" means that a viewport will clip to the same region as any viewports it exists within.
-For example if viewport has \texttt{clip} set to ``on", then any viewport created within viewport that uses ``inherit" will clip to the same region as the parent viewport.
+For example if viewport has \texttt{clip} set to ``on", then any viewport created within that viewport which uses ``inherit" will clip to the same region as the parent viewport.
 We can demonstrate this by modifying \autoref{fig:viewport-clipping-example} to produce \autoref{fig:viewport-inherit-example}.
 
 \begin{figure}[H]
@@ -1606,7 +1602,7 @@ This is why the text is drawn outside its viewport dimensions but is still parti
 When \gridSVG{} begins its process of creating SVG images, it parses what is present in the current plot and attempts to recreate it.
 In doing so, when \gridSVG{} moves into a viewport, its \texttt{clip} parameter is inspected.
 If the parameter is set to ``on", then we need to implement the clipping region in SVG.
-This does not require much extra work because \gridSVG{} already created a \texttt{<g>} element to group all of the graphics objects together that are drawn within it.
+This does not require much extra work because \gridSVG{} has already created a \texttt{<g>} element to group all of the graphics objects together that are drawn within it.
 The reason this is useful is because SVG allows us to define a clipping region on a \texttt{<g>} element, which affects all of the elements within the \texttt{<g>} element.
 A clipping region implemented in \gridSVG{} produces output similar to \autoref{lst:gridsvg-clippath-example}.
 
@@ -1637,8 +1633,8 @@ The naming scheme used is to take the viewport's name and suffix it with \texttt
 
 However, a problem is encountered due to the fact that when we create a group for a viewport, we would be giving it a non-unique identifier.
 This is because a viewport may be used multiple times by \gridSVG{} when drawing a plot.
-When a viewport was applied more than once, we ended up with multiple \texttt{<g>} elements with the same name.
-In doing so, when we would also create multiple clipping paths, all with the same name.
+When a viewport was applied more than once, the result is multiple \texttt{<g>} elements with the same name.
+In doing so, when we create multiple clipping paths they all receive the same name.
 When an SVG renderer attempts to work out which \texttt{<g>} element to clip, it will make a choice, but this behaviour is undefined.
 This means that \gridSVG{} would only be able to clip to a single usage of a given viewport. 
 
@@ -1693,28 +1689,28 @@ This confirms that \gridSVG{} is now creating unique identifiers for viewports.
 We can now clip to \texttt{<g>} elements safely, using SVG code similar to what is shown in \autoref{lst:gridsvg-clippath-example}.
 
 Although \gridSVG{} can now clip to elements the only cases that have been implemented are when a viewport's \texttt{clip} parameter is \texttt{on} or \texttt{off}.
-This is because we only get to observe one viewport at a time.
+This is because we can only get to inspect one viewport at a time.
 The only clipping region information we have available to us when inspecting a viewport is whether or not graphical output can exceed the viewport's dimensions.
 In order to support \texttt{inherit} we need to know the clipping region of a parent viewport, which \gridSVG{} cannot do at the moment.
 Further work in this area may be explored in future.
 
 \section{Animation}
 
-While most of the work involved in the development of \gridSVG{} involved creating accurate graphical output, a feature of \gridSVG{} that was also improved was it's ability to animate graphical objects.
+While most of the work involved in the development of \gridSVG{} involved creating accurate graphical output, a feature of \gridSVG{} that was also improved was its ability to animate graphical objects.
 When animating a graphical object, \gridSVG{} is able to write an \texttt{<animate>} element that describes the behaviour of the animation.
-The \texttt{<animate>} element requires three key pieces of information: the name of an element, the attribute to be animated, values that the attribute is going to animate through.
+The \texttt{<animate>} element requires three key pieces of information: the name of an element, the attribute to be animated and values that the attribute is going to animate through.
 For example, in order to move a rectangle right from $(2, 0)$ to $(5, 0)$ the animate element needs to know the name of the circle, that the $x$ attribute is being changed and that it is being changed from 2 to 5.
 The function that \gridSVG{} provides that handles this task is \texttt{grid.animate()}.
 
 Some of the changes that were made to \gridSVG{} when improving its ability to draw plots caused \texttt{grid.animate()} to no longer function correctly.
-The most important of the changes is that there is no longer the assumption that one graphics object produces one SVG element.
+The most important of these changes are that there is no longer the assumption that one graphics object produces one SVG element.
 The naming scheme applied to SVG elements means that when we want to animate a graphics object like a rectangle, we need to know exactly how many visible rectangles the graphics object produces.
 For example, assume two rectangles have been produced from one graphics object named \texttt{GRID.rect.1}.
 When attempting to animate this graphics object using \gridSVG{}, the problem we encounter is that although the names given to SVG elements are known, \grid{} is not aware of them.
 This means that when animating the first rectangle in a rectangle object named \texttt{GRID.rect.1}, we cannot simply attempt to animate \texttt{GRID.rect.1.1} as it does not exist.
 
 The solution that was applied to \gridSVG{} is that a matrix of values can now be used to animate a graphics object, rather than a vector.
-The columns of each matrix refer to each of the sub graphics objects that a graphics object produces.
+The columns of each matrix refer to each of the graphical elements that a graphics object produces.
 Each of the rows is the value to be shown at a given time.
 Because a matrix is being used, \R{}'s behaviour regarding matrices requires us to provide values for every column of the matrix.
 Consequently, whenever animation occurs on a graphics object we need to animate every element produced by that object.
@@ -1807,26 +1803,26 @@ When \gridSVG{} writes this to SVG we can see that the \texttt{<animate>} elemen
 The \texttt{attributeName} states that we are animating by $y$, and the \texttt{values} indicate the values we are animating through, separated by semicolons.
 
 The use of matrices to animate properties of a graphics object is a usable solution to our initial problem.
-However, it does come with some drawbacks.
+However, there are some consequences.
 Our application of matrices assumes when animating positional or sizing attributes that they fulfil three requirements.
 The first of these requirements is that all values of the attribute have the same \grid{} unit.
 This means we can't correctly animate through a set of $x$ values where some of the $x$s are being specified in inches while others are in centimetres.
 Another requirement is that the units themselves cannot be complex units, i.e. units composed of more than one type of unit.
 An example of a complex unit would be where a height is specified as being 3 inches plus 2 centimetres.
 The third restriction is that the animation values use the same unit as the attribute they are animating.
-If a rectangle is one wide, anything that animates the rectangle's width must be measured in inches.
+If a rectangle is one inch wide, anything that animates the rectangle's width must be measured in inches.
 
-The reason for these restrictions is the fact that matrices can be composed of either numeric, logical or character values.
+The reason for these restrictions is the fact that matrices can be composed of either numeric, boolean or character values.
 There is therefore no way of using \grid{}'s unit type to specify values to animate through.
-Any parameters of graphics objects that are character or logical values have no obvious drawbacks when using matrices to animate their values.
+These restrictions do not apply to parameters of graphics objects that have character or boolean values.
 
-When improving \texttt{grid.animate()} another issue that had to be mitigated was the fact that points can be composed of several types of graphics objects.
+When improving \texttt{grid.animate()} another issue that had to be mitigated is that points can be composed of several types of graphics objects.
 Consequently, a parameter of a \grid{} graphics object can map to many different SVG attributes.
-An example of this a plotting character composed of a circle and a couple of lines (see \autoref{subfig:pch10}).
+An example of this is a plotting character composed of a circle and two lines (see \autoref{subfig:pch10}).
 When animating its $x$ values, we need to move the circle along its \texttt{cx} attribute in SVG, while the line must be animated by its \texttt{points} attribute.
 This means when extending animation support for points graphics objects, we need to know the structure of the plotting character that is being animated.
 The current solution is simply to implement support for each plotting character individually.
 This means any change in how \gridSVG{} draws a plotting character may break animation support for that plotting character.
 
 The method of animating \grid{} graphics objects has been revised to account for recent developments in \gridSVG{}.
-Several graphics objects can now be animated along many of their properties.
+In addition, several graphics objects can now be animated along many of their properties.

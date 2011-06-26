@@ -1,15 +1,220 @@
 \chapter{Discussion}
 
-    - brief summary
+\subsubsection{Comparison to \textsf{SVGAnnotation}}
 
-    - Possible Improvements
+The development of \gridSVG{} has led not only to visible improvements in the images it produces, but also to the ability to apply it to real-world \grid{} graphics.
+It has become a viable alternative in the area of web-based interactive graphics as it can capably produce animated and interactive \R{} graphics.
+The only other solution that offered anything similar to what has been accomplished is \textsf{SVGAnnotation}.
+The key issue with \textsf{SVGAnnotation}, that it lacks transparency, can now be compared against \gridSVG{}.
 
-    - Known downsides
+Transparency can be demonstrated simply by comparing the output of \R{}'s \texttt{svg()} device when against \gridSVG{}'s output.
+Because \textsf{SVGAnnotation} uses images that the \texttt{svg()} device produces, we can see what information must be used to create animated and interactive plots.
+When drawing the text ``Hello, world!" in \grid{}, we compare the different SVG images using \autoref{fig:svg-output-compare}.
 
-      + slow as death
+\begin{figure}[H]
+\centering
 
-      + ONLY works with grid graphics
+\begin{subfigure}[t]{\textwidth}
+\centering
+\begin{rconsolecode}
+> grid.text("Hello, world!")
+> grid.ls()
+GRID.text.1
+\end{rconsolecode}
+\caption{A simple example using \grid{} graphics.}
+\label{lst:gridtext-example}
+\end{subfigure}
 
-    - Improvements over existing solutions?
+\begin{subfigure}[t]{\textwidth}
+\centering
+\begin{xmlcode}
+<defs>
+  <g>
+    <symbol id="glyph0-0">
+      <path d="..." />
+    </symbol>
+    ...
+    <symbol id="glyph0-9">
+      <path d="..." />
+    </symbol>
+  </g>
+</defs>
+<g>
+  <use xlink:href="#glyph0-0" x="218" y="256" />
+  ...
+  <use xlink:href="#glyph0-9" x="281" y="256" />
+</g>
+\end{xmlcode}
+\caption{A subset of the SVG code produced by the \texttt{svg()} device to create the image described by \autoref{lst:gridtext-example}.}
+\label{lst:gridtext-svgdev}
+\end{subfigure}
+\begin{subfigure}[t]{\textwidth}
+\centering
 
-    - Implications of project, SVG in HTML5, etc.
+\begin{xmlcode}
+<g id="GRID.text.1">
+  <g id="GRID.text.1.1">
+    ...
+    <text>
+      <tspan>Hello, world!</tspan>
+    </text>
+    ...
+  </g>
+</g>
+\end{xmlcode}
+
+\caption{A subset of \gridSVG{}'s output from \autoref{lst:gridtext-example}.}
+\label{lst:gridtext-gridsvg}
+\end{subfigure}
+\caption{Comparing the output produced by the \texttt{svg()} device and \gridSVG{}.}
+\label{fig:svg-output-compare}
+\end{figure}
+
+Observing the different SVG code produced, we can see that \textsf{SVGAnnotation} has little information to work with.
+There is no way of knowing directly from the output that the text object we used was in fact \texttt{GRID.text.1}.
+We can clearly see in \gridSVG{}'s SVG code what \texttt{GRID.text.1} has been translated to.
+This means that anyone who wishes to write JavaScript that interacts with the SVG image will know in advance exactly what they need to target, the name of the \grid{} graphics object.
+
+The output produced by the \texttt{svg()} device will be more accurate to the image shown when viewing a plot in \R{}.
+However, there are several advantages in the approach that \gridSVG{} takes.
+Firstly, it maps graphics objects to appropriate SVG elements, while the \texttt{svg()} device always maps to a \texttt{<path />} element.
+By using appropriate SVG elements we gain features that \textsf{SVGAnnotation} simply cannot provide, primarily regarding text.
+Among the additional features are text selection, text search and the ability to use fonts unknown to \R{}.
+
+Another issue with the \texttt{svg()} device always using the \texttt{<path />} element is when we attempt to manipulate it either through animation or JavaScript.
+An example of a graphics object where \gridSVG{} makes this task easier is with circles. 
+If we wish to manipulate the radius of a circle, we can use the fact that SVG's \texttt{<circle />} element has a radius attribute (\texttt{r}) to perform the manipulation.
+This makes animation straightforward for \texttt{grid.animate()} and it makes writing JavaScript easy as we just have to change the value of the attribute.
+To perform the same manipulation on a \texttt{<path />} element, it is necessary to rewrite path data which is a non-trivial task.
+
+The approach that \gridSVG{} takes appears to be more beneficial than the potential cost of having less accurate images.
+However, \textsf{SVGAnnotation} is the only option when using \R{}'s base graphics engine as \gridSVG{} is restricted solely to \grid{} graphics.
+This is a downside to \gridSVG{}.
+However, the fact that popular plotting libraries \textsf{lattice} and \textsf{ggplot2} use \grid{} means that many plots will still be able to benefit from \gridSVG{}.
+
+\subsubsection{Processing Time}
+
+An issue when creating SVG images using \gridSVG{} is the large amount of time taken to produce an image.
+This is largely due to the amount of graphics object manipulation that \gridSVG{} performs.
+There is no easy solution to this problem.
+A consequence of the amount of processing required is that dynamically generated images created and delivered by a web server are currently infeasible.
+
+\subsubsection{Grouping Issues}
+
+When developing \gridSVG{} one of the key design decisions was the choice of grouping elements relating to a graphics object.
+This meant that in SVG, the name of a graphics object doesn't refer to a graphical SVG element, merely a set of graphical elements.
+A consequence of this decision is that a user cannot write JavaScript that targets the name of a graphics object.
+Instead the children of the element with the name of the graphics object must be used instead.
+Because of the naming scheme that is applied, it must be known in advance exactly which child element is the target.
+Despite this, the naming scheme provides a transparent and reliable means of accomplishing this task.
+
+A task that was made easier by the introduction of grouping graphics objects is when applying JavaScript event attributes to a graphics object.
+When an attribute like \texttt{onmouseover} is added to a \texttt{<g>} element, any children of the \texttt{<g>} element implicitly have the same event attribute applied along with its associated value.
+This process is known in JavaScript as event capturing.
+An example where this might be useful is if you have a set of points that you want to highlight when you hover a mouse cursor over them.
+If the points object is given the name \texttt{GRID.points.1}, then all we need to do is garnish the \texttt{GRID.points.1} object to include the appropriate event handling code.
+The JavaScript that is written can then simply change the colour of the element that triggered the event to perform highlighting.
+
+It is not yet known whether this decision to perform grouping is the best solution.
+It provides a means of mitigating many of the problems we have encountered and appears to have useful and reliable properties for our uses.
+
+\subsubsection{X-splines to Lines and Paths}
+
+A design decision that may be re-evaluated in future is the decision for x-splines to become lines or paths, depending on whether the x-spline is open or closed.
+We used a line graphics object for open splines because they cannot be filled and because \grid{} path objects are always closed.
+It may prove beneficial to always use paths for consistency.
+This would mean that the only difference in SVG output between open and closed splines are attributes of the resulting \texttt{<path />} element.
+In this case an open spline would be an open path with no fill, while a closed spline would be a closed path with a fill.
+This is an alternative to the current implementation.
+
+\subsubsection{Animation}
+
+Although a large amount of progress has been made on \gridSVG{}, there is still room for improvement.
+Some of this is due to the incompleteness of the current implementation, especially with regards to animation.
+There are still some of graphics objects that do not support animation, along with their associated parameters.
+The possible improvements that will be considered relate to design decisions.
+
+\subsubsection{Points as Paths}
+
+\gridSVG{} currently implements each plotting character for points objects as a grouped set of \grid{} graphics objects.
+Rather than using several graphics objects to implement a plotting character, we could instead use a single \grid{} path.
+The benefits of this choice would be that we would be simplifying the SVG output.
+It would also make interactivity via JavaScript a simpler task.
+
+The downsides of this option are that \texttt{<path />} elements are difficult to modify.
+This is because there are no parameters which dictate size and position, only path data is present.
+Therefore, in order to animate the size and position of a point, path data must be parsed and modified.
+Alternatively, a \texttt{<path />} could be scaled and translated appropriately.
+This is a viable solution, but it does require some care in ensuring that the line width of a path does not change after scaling.
+
+\subsubsection{Viewports}
+
+Viewports are another area in which improvements could be made.
+Currently there is no support for clipping on viewports when the \texttt{clip} parameter is set to \texttt{inherit}.
+This is due to a viewport not containing information about the region it is clipping to, only whether it defines its own clipping region.
+The \grid{} graphics system does internally know this information.
+A possible solution may be to expose this information to allow \gridSVG{} to inspect it.
+This would make it possible for clipping to occur on all parameters.
+
+Viewports are also written out every time they are visited.
+While \gridSVG{} works fine using this approach, an alternative may be to store graphics objects for each viewport in a queue.
+This would mean that each time a graphics object is drawn within a viewport, the graphics object is stored on a viewport-specific queue.
+The reason why this might be a better approach is that we would only end up writing out the viewport and its contents once.
+This would also mean that a clipping path would only have to be written once.
+By implementing this possible solution, the SVG code would be made more concise, but no visual improvement would occur.
+
+\subsubsection{Using the \textsf{XML} package}
+
+We could also introduce the use of the \textsf{XML} package \citep{Lan11}.
+This would improve \gridSVG{}'s ability to write out SVG.
+Currently the way in which SVG code is produced is by writing out a string of text for each of the graphics objects and viewports. 
+Rather than using hard-coded strings of text which are prone to errors, we could use the \textsf{XML} package to do this for us.
+This would make the process of writing to SVG a lot more reliable within \gridSVG{}.
+
+\subsubsection{Improvements to \texttt{grid.garnish()} and \texttt{grid.hyperlink()}}
+
+The previous suggestions for future improvements have all been regarding cosmetic improvement to SVG code and not the usage of \gridSVG{}.
+The functions \texttt{grid.garnish()} and \texttt{grid.hyperlink()} could be modified to handle sub graphics objects in the same way that \texttt{grid.animate()} does.
+Currently they apply their garnishing and hyperlinking to the \texttt{<g>} element that groups together the graphical elements that are produced from a graphics object.
+There is no way to use these functions to affect any of the elements which are children of the \texttt{<g>} element.
+In other words, you either garnish and hyperlink all elements (via the \texttt{<g>} element) or not at all.
+By using matrices or some other \R{} data structure, we could use the functions in the same way that \texttt{grid.animate()} does.
+This would provide a consistent interface for modifying graphical objects along with being able to provide the functionality that is currently lacking.
+
+The \texttt{grid.*()} functions that \gridSVG{} provides either accept a matrix of input for its parameters or have been suggested to do so when modifying graphical objects.
+It is not yet known whether this is the best approach for handling input.
+A list as input may prove to be more appropriate, or perhaps a combination of lists and matrices, or something different altogether.
+Further investigation into the merits of these approaches could certainly lead to an improvement in the usability of these functions.
+
+\subsubsection{File sizes}
+
+An issue with the output of \gridSVG{} is that file sizes increase with the complexity of the plot.
+It is easy to produce a plot that is several megabytes in size.
+Images of this size are unsuitable for distribution on the web due to the time taken to download such a large file.
+
+Because SVG is text based and there is a lot of repeated text, SVG compresses well with tools like GNU zip.
+This is not immediately useful for distribution because web browsers cannot view compressed SVG images and simply download the image instead.
+However, all the popular web server applications currently in use can be configured to compress SVG on-the-fly.
+This means that if a web browser is able to accept compressed text, it will be sent compressed text, and decompressed automatically by the browser.
+Now we can still show and store large SVG files, but they are delivered as if they were zipped.
+
+A demonstration of the benefits of compression uses the stock ticker demonstration in \autoref{fig:demo-stock-prices}.
+This image is 8.5MB in size, but it compresses down to just 86kB.
+This makes an image that would take several seconds to deliver on a standard internet connection be delivered almost immediately.
+
+\subsubsection{HTML}
+
+An interesting feature that was noticed during the development of \gridSVG{} is the behaviour of JavaScript when SVG is used within an HTML document.
+JavaScript that originates from an HTML document can affect the appearance and behaviour of an SVG image.
+Conversely, JavaScript that is inserted into an SVG image can affect the state of a web page.
+An implication of this is that we can use the user interface controls that are present in HTML to affect an SVG image.
+This could be useful if you wish to selectively show some data in an SVG image, and could accomplish this using a combination of HTML checkboxes and JavaScript.
+For example, the stock ticker example in \autoref{fig:demo-stock-prices} could show and hide each line using checkboxes.
+
+\subsubsection{Implications}
+
+The implications of this project are that we can now create our own animated and interactive \grid{} graphics.
+These graphics can be extended more easily than previous methods and allow the possibility of new \R{} packages being created to build upon \gridSVG{}.
+These packages could automate the creation of plots like those demonstrated in Section 5.
+By using \gridSVG{} we can also create statistical reports for distribution on the web that engage the reader better than with static graphics.
+

@@ -45,7 +45,7 @@ This means that we can use \textsf{gWidgetsWWW} to create a graphical user inter
 When used in conjunction with \textsf{RApache}, an \R{} module for the Apache HTTP Server, \textsf{gWidgetsWWW} can add interactivity to a web page.
 
 A package developed by \citet{Lan10} that generates animated, interactive graphics via the \R{} graphics system is \textsf{SVGAnnotation}.
-It leverages \R{}'s \texttt{svg} graphics device by post-processing its output to see which SVG elements correspond with specific components of a plot.
+It leverages \R{}'s \texttt{svg()} graphics device by post-processing its output to see which SVG elements correspond with specific components of a plot.
 After performing the post-processing, animation can occur along with interactivity via JavaScript.
 Many functions have been provided that allow for interactivity in processed plots.
 Examples of these functions include adding tooltips, animating graphical elements and linking related points.
@@ -68,8 +68,8 @@ What it does not provide is any means of animating a plot once it has been creat
 It can only be done in a manner similar to \textsf{animation}, which is impractical to serve frame by frame over the internet due to latency and network speed.
 
 \textsf{SVGAnnotation} can also create the kind of graphics we desire, but it is difficult to understand how it works.
-The approach \textsf{SVGAnnotation} takes to match SVG elements with graphical objects in \R{} requires knowledge of the expected SVG output of the \texttt{svg} device.
-This introduces a lack of transparency because it relies on reverse engineering \R{}'s \texttt{svg} device's output.
+The approach \textsf{SVGAnnotation} takes to match SVG elements with graphical objects in \R{} requires knowledge of the expected SVG output of the \texttt{svg()} device.
+This introduces a lack of transparency because it relies on reverse engineering \R{}'s \texttt{svg()} device's output.
 Because of this, it is challenging to extend \textsf{SVGAnnotation}'s features to create animated and interactive graphics that are not provided out-of-the-box.
 Another issue to consider is that if \textsf{SVGAnnotation} does not work as expected then there is little that a user can do.
 
